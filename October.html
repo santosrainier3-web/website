@@ -166,13 +166,23 @@ function esc(s){ return String(s).replace(/[&<>"]/g,function(c){return {"&":"&am
 function D(d){ var x=res[d]; if(!x||!x.slots){ x=res[d]={slots:{},wait:[],wid:[]}; } return x; }
 function say(t){ var m=document.getElementById("msg"); m.textContent=t; clearTimeout(say.t); say.t=setTimeout(function(){m.textContent="";},5000); }
 
-// Booking window: opens 12:00 am the day before, closes 2 hours before the session starts
+// Booking window configuration
 function startOf(d){ var s=SLOTS[d]; if(!s) return null; return new Date(YEAR,MONTH,d,s.indexOf("12")===0?12:18,0); }
 function status(d){
 var st=startOf(d); if(!st) return "none";
-var now=new Date(), opens=new Date(YEAR,MONTH,d-1,0,0), closes=new Date(st.getTime()-2*3600000);
-if(now<opens) return "soon";
-if(now>=closes) return "closed";
+var now=new Date(), closes=new Date(st.getTime()-2*3600000);
+var opens;
+
+if(d === 15) {
+  // Oct 15 opens explicitly on October 15, 2026 at 10:00 am
+  opens = new Date(2026, 9, 15, 10, 0, 0);
+} else {
+  // Other dates open at 12:00 am the day before
+  opens = new Date(YEAR, MONTH, d - 1, 0, 0);
+}
+
+if(now < opens) return "soon";
+if(now >= closes) return "closed";
 return "open";
 }
 
@@ -184,7 +194,8 @@ for(var r=0;r<5;r++){
 h+="<tr>";
 for(var c=0;c<7;c++){
 if(r*7+c<first||d>total){h+='<td class="empty"></td>';continue;}
-var s=SLOTS[d], stt=status(d), n=res[d]&&res[d].slots?Object.keys(res[d].slots).length:0, info=stt==="soon"?"Opens Oct "+(d-1):(stt==="closed"?"Closed":(n?n+"/"+MAXSLOTS:""));
+var s=SLOTS[d], stt=status(d), n=res[d]&&res[d].slots?Object.keys(res[d].slots).length:0, 
+    info = stt==="soon" ? (d===15 ? "Opens Oct 15, 10am" : "Opens Oct "+(d-1)) : (stt==="closed"?"Closed":(n?n+"/"+MAXSLOTS:""));
 h+='<td><button class="day'+(s?' has':'')+(stt==="soon"||stt==="closed"?' dim':'')+'" data-d="'+d+'"'+(stt==="none"||stt==="soon"?' disabled':'')+' aria-label="October '+d+(stt==="soon"?', not open yet':'')+'">'+d+
 (s?'<span class="tag '+(s.indexOf("12")===0?"noon":"eve")+'">'+s+'</span>':'')+
 (info?'<span class="cnt">'+info+'</span>':'')+'</button></td>';
