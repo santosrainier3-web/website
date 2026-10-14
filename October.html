@@ -155,7 +155,7 @@ input:focus-visible{outline:3px solid var(--ball)}
 var SLOTS = {15:"6-10 pm",16:"12-3 pm",19:"6-10 pm",20:"6-10 pm",21:"12-3 pm",22:"6-10 pm",23:"12-3 pm",26:"6-10 pm",27:"6-10 pm",28:"12-3 pm",29:"6-10 pm",30:"6-10 pm"};
 var YEAR=2026, MONTH=9, MAXSLOTS=30, MAXWAIT=4;
 // >>> SETUP: paste your Firebase Realtime Database URL below (see README steps) <<<
-var DB_URL = "PASTE_YOUR_FIREBASE_DATABASE_URL_HERE"; // e.g. "https://my-club-default-rtdb.firebaseio.com"
+var DB_URL = "https://console.firebase.google.com/u/2/project/sevpc-281be/database/sevpc-281be-default-rtdb/data/~2F"; // e.g. "https://my-club-default-rtdb.firebaseio.com"
 
 var res={}, ready=false, canWrite=true, ops=null;
 function persist(){ try{ localStorage.setItem("pb-slots2", JSON.stringify(res)); }catch(e){} }
