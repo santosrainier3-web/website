@@ -1,16 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  const firebaseConfig = {
-    apiKey: "AIzaSyBavjKjAXhSBdCwiH6DDWfSs5CU_vi6uMY",
-    authDomain: "sevpc-281be.firebaseapp.com",
-    databaseURL: "https://sevpc-281be-default-rtdb.firebaseio.com",
-    projectId: "sevpc-281be",
-    storageBucket: "sevpc-281be.firebasestorage.app",
-    messagingSenderId: "375689008380",
-    appId: "1:375689008380:web:290d05057f4f7b3901b379",
-    measurementId: "G-7V1J6T1GVN"
-  };
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Pickleball Calendar – October</title>
@@ -159,11 +149,15 @@ input:focus-visible{outline:3px solid var(--ball)}
   </div>
 </dialog>
 
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
 <script>
 var SLOTS = {15:"6-10 pm",16:"12-3 pm",19:"6-10 pm",20:"6-10 pm",21:"12-3 pm",22:"6-10 pm",23:"12-3 pm",26:"6-10 pm",27:"6-10 pm",28:"12-3 pm",29:"6-10 pm",30:"6-10 pm"};
 var YEAR=2026, MONTH=9, MAXSLOTS=30, MAXWAIT=4;
-var res={}, ready=false, canWrite=true, ops=null, DBX=null, bdocs=[], wdocs=[];
-var TAB="t"+Math.random().toString(36).slice(2);
+// >>> SETUP: paste your Firebase Realtime Database URL below (see README steps) <<<
+var DB_URL = "https://console.firebase.google.com/u/2/project/sevpc-281be/database/sevpc-281be-default-rtdb/data/~2F"; // e.g. "https://my-club-default-rtdb.firebaseio.com"
+
+var res={}, ready=false, canWrite=true, ops=null;
 function persist(){ try{ localStorage.setItem("pb-slots2", JSON.stringify(res)); }catch(e){} }
 function esc(s){ return String(s).replace(/[&<>"]/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]}); }
 function D(d){ var x=res[d]; if(!x||!x.slots){ x=res[d]={slots:{},wait:[],wid:[]}; } return x; }
@@ -220,7 +214,7 @@ function renderSlots(){
   document.getElementById("whint").textContent=!isOpen?"Reservations are closed for this date.":(full?"All slots are full. Join the list and you move up when a spot opens.":"Opens when all "+MAXSLOTS+" slots are taken.");
   var cl=new Date(startOf(current).getTime()-7200000);
   document.getElementById("when").textContent="October "+current+" \u00b7 "+SLOTS[current]+" \u00b7 "+(isOpen?"Reservations close at "+cl.toLocaleTimeString([],{hour:"numeric",minute:"2-digit"}):"Reservations closed");
-  document.getElementById("mode").textContent=!ready?"Connecting\u2026":(!DBX?"Live sharing isn't available here, so bookings are saved on this device only.":(canWrite?"":"View only: you need contributor access to reserve."));
+  document.getElementById("mode").textContent=!ready?"Connecting\u2026":(!fdb?"Setup needed: add your Firebase URL at the top of the script. Until then bookings are saved on this device only.":(connErr?"Can't reach the booking server right now.":""));
 }
 function refresh(){ if(slotView.style.display==="block"){ if(!dlg.open) renderSlots(); } else buildCal(); }
 function show(v){
@@ -237,58 +231,51 @@ document.getElementById("back").onclick=function(){
   var b=cal.querySelector('[data-d="'+current+'"]'); if(b) b.focus();
 };
 
-// ---- Storage: local (this device) or shared (claude db) ----
+// ---- Storage: Firebase Realtime Database (shared) or this device (fallback) ----
 var local={
   reserve:async function(d,n,name){ var x=D(d); if(x.slots[n]) return {ok:false,msg:"That slot was just taken."}; x.slots[n]=name; persist(); return {ok:true}; },
   join:async function(d,name){ var x=D(d); if(x.wait.length>=MAXWAIT) return {ok:false,msg:"The waiting list is full."}; x.wait.push(name); persist(); return {ok:true}; },
   rmSlot:async function(d,n){ var x=D(d); delete x.slots[n]; promote(); persist(); return {ok:true}; },
   rmWait:async function(d,i){ D(d).wait.splice(i,1); persist(); return {ok:true}; }
 };
-async function withLock(d,fn){
-  var lk=await DBX.doc("locks/d"+d).acquire({holder:TAB,ttlMs:8000});
-  if(!lk.acquired) return {ok:false,msg:"Someone else is updating this date. Try again in a moment."};
-  try{ return await fn(); }catch(e){ return {ok:false,msg:"Could not save. Please try again."}; }
+var fdb=null, connErr=false;
+function toArr(v){ if(!v) return []; if(Array.isArray(v)) return v.filter(Boolean); return Object.keys(v).sort(function(a,b){return a-b}).map(function(k){return v[k]}).filter(Boolean); }
+function normSlots(v){ var o={}; if(!v) return o; Object.keys(v).forEach(function(k){ if(v[k]) o[k]=v[k]; }); return o; }
+// Every change runs as a transaction on that date, so two people booking at once never overwrite each other.
+function tx(d,fn){
+  var out={ok:false,msg:"Could not save. Please try again."};
+  return fdb.ref("pb/d"+d).transaction(function(cur){
+    var x={slots:normSlots(cur&&cur.slots),wait:toArr(cur&&cur.wait)};
+    out=fn(x);
+    if(!out.ok) return;
+    return (Object.keys(x.slots).length||x.wait.length)?x:null;
+  }).then(function(t){ return t.committed?out:(out.ok?{ok:false,msg:"Could not save. Please try again."}:out); })
+    .catch(function(){ return {ok:false,msg:"Could not save. Check your connection."}; });
 }
 var remote={
-  reserve:function(d,n,name){ return withLock(d,async function(){
-    var ref=DBX.doc("bookings/d"+d+"-s"+n), s=await ref.get();
-    if(s.exists&&s.data().name) return {ok:false,msg:"That slot was just taken."};
-    await ref.set({d:d,n:n,name:name}); return {ok:true};
-  }); },
-  join:function(d,name){ return withLock(d,async function(){
-    if(D(d).wait.length>=MAXWAIT) return {ok:false,msg:"The waiting list is full."};
-    await DBX.doc("waits/d"+d+"-"+Date.now()+"-"+Math.random().toString(36).slice(2,6)).set({d:d,name:name,t:Date.now()}); return {ok:true};
-  }); },
-  rmSlot:function(d,n){ return withLock(d,async function(){
-    await DBX.doc("bookings/d"+d+"-s"+n).delete();
-    var x=D(d);
-    if(x.wait.length){ // waiting list #1 moves into the empty number
-      await DBX.doc("bookings/d"+d+"-s"+n).set({d:d,n:n,name:x.wait[0]});
-      await DBX.doc("waits/"+x.wid[0]).delete();
-    }
+  reserve:function(d,n,name){ return tx(d,function(x){ if(x.slots[n]) return {ok:false,msg:"That slot was just taken."}; x.slots[n]=name; return {ok:true}; }); },
+  join:function(d,name){ return tx(d,function(x){ if(x.wait.length>=MAXWAIT) return {ok:false,msg:"The waiting list is full."}; x.wait.push(name); return {ok:true}; }); },
+  rmSlot:function(d,n,name){ return tx(d,function(x){
+    if(x.slots[n]!==name) return {ok:false,msg:"That booking just changed. Please check the list."};
+    delete x.slots[n];
+    if(x.wait.length) x.slots[n]=x.wait.shift(); // waiting list #1 fills the empty number
     return {ok:true};
   }); },
-  rmWait:function(d,i){ return withLock(d,async function(){ await DBX.doc("waits/"+D(d).wid[i]).delete(); return {ok:true}; }); }
+  rmWait:function(d,i,name){ return tx(d,function(x){ if(x.wait[i]!==name) return {ok:false,msg:"That booking just changed. Please check the list."}; x.wait.splice(i,1); return {ok:true}; }); }
 };
-function rebuild(){
-  res={};
-  bdocs.forEach(function(s){ var v=s.data(); if(v&&v.name) D(v.d).slots[v.n]=v.name; });
-  wdocs.map(function(s){return {id:s.id,v:s.data()};}).filter(function(o){return o.v&&o.v.name;})
-    .sort(function(a,b){return a.v.t-b.v.t;}).forEach(function(o){ var x=D(o.v.d); x.wait.push(o.v.name); x.wid.push(o.id); });
-  refresh();
-}
-async function init(){
-  try{
-    var c=window.claude&&await claude.use("db");
-    if(c){
-      DBX=c; ops=remote; res={};
-      try{ var u=await claude.use("user"); if(u&&u.can){ canWrite=(await u.can("data.write"))!==false; } }catch(e){}
-      c.collection("bookings").onSnapshot(function(s){ bdocs=s.docs; rebuild(); },function(){});
-      c.collection("waits").onSnapshot(function(s){ wdocs=s.docs; rebuild(); },function(){});
-    }
-  }catch(e){}
-  if(!DBX){ ops=local; try{ res=JSON.parse(localStorage.getItem("pb-slots2")||"{}"); }catch(e){} }
-  ready=true; refresh();
+var configured=/^https:\/\//.test(DB_URL)&&DB_URL.indexOf("PASTE")<0;
+function init(){
+  if(configured&&window.firebase){
+    try{
+      firebase.initializeApp({databaseURL:DB_URL}); fdb=firebase.database(); ops=remote;
+      fdb.ref("pb").on("value",function(s){
+        connErr=false; var v=s.val()||{}; res={};
+        Object.keys(v).forEach(function(k){ var d=+k.slice(1), x=v[k]||{}; res[d]={slots:normSlots(x.slots),wait:toArr(x.wait),wid:[]}; });
+        ready=true; refresh();
+      },function(){ connErr=true; ready=true; refresh(); });
+    }catch(e){ fdb=null; }
+  }
+  if(!fdb){ ops=local; try{ res=JSON.parse(localStorage.getItem("pb-slots2")||"{}"); }catch(e){} ready=true; refresh(); }
 }
 
 // ---- Dialog ----
@@ -301,7 +288,7 @@ function onPick(e){
   if(!canWrite){say("View only: ask the organizer for contributor access to reserve.");return;}
   var x=D(current), isW=b.dataset.w!==undefined;
   pick={w:isW,i:isW?+b.dataset.w:+b.dataset.n};
-  var nm=isW?x.wait[pick.i]:x.slots[pick.i];
+  var nm=isW?x.wait[pick.i]:x.slots[pick.i]; pick.name=nm;
   if(nm){
     document.getElementById("rmtext").textContent="Remove "+nm+" from "+(isW?"waiting list "+(pick.i+1):"slot "+pick.i)+"?";
     openDlg("rm");
@@ -318,11 +305,11 @@ document.getElementById("rmno").onclick=function(){dlg.close();};
 document.getElementById("rmyes").onclick=async function(){
   var d=current;
   if(status(d)!=="open"){dlg.close();renderSlots();return;}
-  var r=pick.w?await ops.rmWait(d,pick.i):await ops.rmSlot(d,pick.i);
+  var r=pick.w?await ops.rmWait(d,pick.i,pick.name):await ops.rmSlot(d,pick.i,pick.name);
   dlg.close(); if(!r.ok) say(r.msg); renderSlots();
 };
 formEl.addEventListener("submit",async function(){
-  var name=document.getElementById("name").value.trim(), d=current;
+  var name=document.getElementById("name").value.trim().slice(0,30), d=current;
   if(status(d)!=="open"){dlg.close();renderSlots();return;}
   if(!name){document.getElementById("name").focus();return;}
   var r=pick.w?await ops.join(d,name):await ops.reserve(d,pick.i,name);
