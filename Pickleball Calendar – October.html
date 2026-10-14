@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Pickleball Calendar – October</title>
+<style>
+:root{--bg1:#0a0922;--bg2:#1d1250;--card:rgba(24,19,66,.82);--edge:rgba(138,108,255,.45);--cell:rgba(255,255,255,.045);--txt:#f2efff;--mute:#a79fd6;--ball:#d6ff3d;--pink:#ff79d6;--violet:#8a6cff;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+*{box-sizing:border-box}
+html{scroll-padding-top:env(safe-area-inset-top,0px);background:var(--bg1)}
+body{margin:0;min-height:100vh;color:var(--txt);font-family:"Trebuchet MS","Helvetica Neue",Arial,sans-serif;background:radial-gradient(900px 600px at 85% -10%,#3a1f8f 0%,transparent 60%),radial-gradient(700px 500px at -10% 100%,#2b1670 0%,transparent 60%),linear-gradient(160deg,var(--bg2),var(--bg1) 70%);background-attachment:fixed;overflow-x:hidden;position:relative}
+.bg{position:fixed;inset:0;pointer-events:none;z-index:0;overflow:hidden}
+.bg svg{position:absolute;opacity:.12;fill:currentColor}
+.bg .p1{width:190px;left:-50px;top:18%;transform:rotate(-28deg);color:var(--violet)}
+.bg .p2{width:230px;right:-70px;bottom:6%;transform:rotate(24deg);color:var(--pink)}
+.bg .b1{width:70px;left:12%;bottom:10%;color:var(--ball);opacity:.18}
+.bg .b2{width:46px;right:14%;top:12%;color:var(--ball);opacity:.18}
+#calView{display:flex;justify-content:center;padding:56px 12px 28px;position:relative;z-index:1}
+.card{position:relative;background:var(--card);border:1px solid var(--edge);border-radius:28px;width:100%;max-width:640px;padding:30px 22px 24px;box-shadow:0 30px 80px rgba(0,0,0,.45),0 0 0 6px rgba(138,108,255,.08);backdrop-filter:blur(6px)}
+.head{display:flex;justify-content:space-between;align-items:flex-end;gap:12px}
+h1{margin:0;font-size:clamp(44px,12vw,72px);letter-spacing:-.04em;line-height:.9;font-weight:900}
+.club{text-align:right;font-weight:800;font-size:clamp(12px,3vw,15px);line-height:1.2;color:var(--mute)}
+.hero{position:absolute;right:14px;top:-48px;width:120px;height:110px;pointer-events:none}
+.hero .pa{position:absolute;width:62px;fill:currentColor}
+.hero .pa.a{left:6px;top:0;transform:rotate(-24deg);color:var(--pink)}
+.hero .pa.b{left:42px;top:6px;transform:rotate(22deg);color:var(--violet)}
+.hero .ball{position:absolute;width:36px;left:44px;top:56px;color:var(--ball);filter:drop-shadow(0 0 10px rgba(214,255,61,.6))}
+.cal-wrap{overflow-x:auto;margin-top:24px}
+table{border-collapse:separate;border-spacing:6px;width:100%;table-layout:fixed;min-width:400px}
+th{font-size:12px;font-weight:800;padding:8px 0;color:var(--mute);background:rgba(138,108,255,.14);border-radius:999px}
+td{padding:0;height:74px;vertical-align:top}
+td.empty{}
+.day{all:unset;box-sizing:border-box;display:flex;flex-direction:column;gap:4px;width:100%;height:100%;padding:8px;cursor:pointer;font-weight:800;font-size:14px;background:var(--cell);border:1px solid rgba(138,108,255,.25);border-radius:12px;transition:transform .12s,border-color .12s,background .12s}
+.day:hover{transform:translateY(-2px);border-color:var(--ball);background:rgba(214,255,61,.08)}
+.day:focus-visible{outline:3px solid var(--ball);outline-offset:1px}
+.day.has{border-color:rgba(255,121,214,.55);background:rgba(255,121,214,.07)}
+.day.dim{opacity:.7}
+.day:disabled{cursor:not-allowed;opacity:.35;border-color:rgba(138,108,255,.2);background:var(--cell)}
+.day:disabled:hover{transform:none}
+.tag{display:inline-block;font-size:10px;font-weight:800;padding:2px 7px;border-radius:999px;width:max-content;color:#150f3a}
+.eve{background:var(--pink)}.noon{background:var(--ball)}
+.cnt{font-size:10px;font-weight:700;color:var(--mute)}
+.note{margin:18px 4px 0;font-weight:700;font-size:12px;line-height:1.5;color:var(--mute);display:flex;gap:10px;align-items:center}
+.note svg{width:26px;flex:none;color:var(--ball);fill:currentColor}
+
+/* Slot view */
+#slotView{display:none;position:relative;z-index:1;min-height:100vh;padding:44px clamp(16px,6vw,80px) 40px;font-family:"Arial Black","Trebuchet MS",Arial,sans-serif;font-style:italic}
+#slotView h2{margin:0;font-size:clamp(24px,5vw,34px);font-weight:900;display:flex;align-items:center;gap:10px}
+#slotView h2 svg{width:30px;color:var(--ball);fill:currentColor}
+.when{font-size:13px;font-style:normal;font-family:"Trebuchet MS",Arial,sans-serif;color:var(--mute);margin:6px 0 0}
+.grid{display:grid;grid-template-columns:repeat(3,1fr);grid-template-rows:repeat(10,auto);grid-auto-flow:column;gap:6px clamp(8px,4vw,60px);margin:28px 0 30px;max-width:900px}
+.slot{all:unset;box-sizing:border-box;display:block;padding:8px 6px;font-size:clamp(14px,3.6vw,26px);font-weight:900;cursor:pointer;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;border-radius:8px}
+.slot:hover{background:rgba(138,108,255,.22)}
+.slot:focus-visible{outline:2px solid var(--ball)}
+.slot.taken{color:var(--ball)}.slot.taken:hover{background:rgba(255,121,214,.22);text-decoration:line-through}
+.slot:disabled{opacity:.3;cursor:not-allowed;background:none}
+.slot.taken:disabled{opacity:1;color:var(--ball);cursor:default}.wslot.taken:disabled{color:var(--pink)}
+.slot:disabled:hover{background:none;text-decoration:none}
+.wl{max-width:900px;margin:0 0 30px}
+.wl h3{margin:0;font-size:clamp(18px,4vw,24px);font-weight:900}
+.wl .hint{font-size:12px;font-style:normal;font-family:"Trebuchet MS",Arial,sans-serif;color:var(--mute);margin:4px 0 10px}
+.wgrid{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}
+.wslot{font-size:clamp(13px,3vw,20px)}.wslot.taken{color:var(--pink)}
+@media (max-width:520px){.wgrid{grid-template-columns:repeat(2,1fr)}}
+.rmtext{margin:0 0 4px;font-size:16px;font-weight:700;line-height:1.4}
+.back{all:unset;box-sizing:border-box;cursor:pointer;border:2px solid var(--violet);border-radius:999px;padding:10px 26px;font-weight:800;font-size:16px;font-style:normal;font-family:"Trebuchet MS",Arial,sans-serif;background:rgba(138,108,255,.12)}
+.back:hover{background:rgba(138,108,255,.3)}
+.back:focus-visible{outline:3px solid var(--ball)}
+
+dialog{border:1px solid var(--edge);border-radius:18px;padding:22px;background:#1a1450;color:var(--txt);width:min(92vw,340px);font-family:"Trebuchet MS",Arial,sans-serif;font-style:normal}
+dialog::backdrop{background:rgba(5,4,25,.7)}
+dialog h3{margin:0 0 14px;font-size:20px}
+label{display:block;font-weight:700;font-size:13px;margin-bottom:6px;color:var(--mute)}
+input[type=text]{width:100%;padding:12px;font-size:16px;border:2px solid var(--violet);border-radius:10px;background:#0e0a36;color:var(--txt)}
+input:focus-visible{outline:3px solid var(--ball)}
+.row{display:flex;gap:8px;margin-top:16px}
+.b{flex:1;padding:12px;border-radius:10px;font-size:15px;font-weight:800;cursor:pointer;border:2px solid var(--violet);background:transparent;color:var(--txt);font-family:inherit}
+.go{background:var(--ball);border-color:var(--ball);color:#150f3a}
+@media (prefers-reduced-motion:reduce){.day{transition:none}}
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="paddle" viewBox="0 0 100 170">
+    <path d="M50 4C23 4 6 24 6 54c0 28 16 48 34 52v10h20v-10c18-4 34-24 34-52C94 24 77 4 50 4z"/>
+    <rect x="41" y="112" width="18" height="52" rx="8"/>
+    <path d="M50 14c-20 0-33 16-33 40 0 22 12 40 28 44" fill="none" stroke="#0a0922" stroke-opacity=".35" stroke-width="4" stroke-linecap="round"/>
+  </symbol>
+  <symbol id="ball" viewBox="0 0 100 100">
+    <circle cx="50" cy="50" r="48"/>
+    <g fill="#0a0922" fill-opacity=".45"><circle cx="50" cy="22" r="6"/><circle cx="26" cy="36" r="6"/><circle cx="74" cy="36" r="6"/><circle cx="50" cy="50" r="6"/><circle cx="22" cy="62" r="6"/><circle cx="78" cy="62" r="6"/><circle cx="38" cy="76" r="6"/><circle cx="62" cy="76" r="6"/></g>
+  </symbol>
+</svg>
+
+<div class="bg" aria-hidden="true">
+  <svg class="p1" viewBox="0 0 100 170"><use href="#paddle"/></svg>
+  <svg class="p2" viewBox="0 0 100 170"><use href="#paddle"/></svg>
+  <svg class="b1" viewBox="0 0 100 100"><use href="#ball"/></svg>
+  <svg class="b2" viewBox="0 0 100 100"><use href="#ball"/></svg>
+</div>
+
+<div id="calView">
+  <div class="card">
+    <div class="hero" aria-hidden="true">
+      <svg class="pa a" viewBox="0 0 100 170"><use href="#paddle"/></svg>
+      <svg class="pa b" viewBox="0 0 100 170"><use href="#paddle"/></svg>
+      <svg class="ball" viewBox="0 0 100 100"><use href="#ball"/></svg>
+    </div>
+    <div class="head">
+      <h1>october</h1>
+      <div class="club">Sta. Elena Village<br>Pickleball<br>Club</div>
+    </div>
+    <div class="cal-wrap"><table id="cal" aria-label="October reservation calendar"></table></div>
+    <p class="note"><svg viewBox="0 0 100 100" aria-hidden="true"><use href="#ball"/></svg><span>SPOTS ARE LIMITED<br>CONTACT US TO SECURE YOUR SLOT<br>AND ENJOY THE PLAY WITHOUT A WORRY.</span></p>
+  </div>
+</div>
+
+<div id="slotView">
+  <h2><svg viewBox="0 0 100 100" aria-hidden="true"><use href="#ball"/></svg>Slot:</h2>
+  <p class="when" id="when"></p>
+  <p class="when" id="mode"></p>
+  <p class="when" id="msg" role="status" style="color:var(--pink)"></p>
+  <div class="grid" id="grid"></div>
+  <div class="wl">
+    <h3>Waiting list:</h3>
+    <p class="hint" id="whint"></p>
+    <div class="wgrid" id="wgrid"></div>
+  </div>
+  <button class="back" id="back">&larr; Back</button>
+</div>
+
+<dialog id="dlg">
+  <form id="form" method="dialog" onsubmit="return false">
+    <h3 id="dtitle">Reserve slot</h3>
+    <label for="name">Your name</label>
+    <input type="text" id="name" autocomplete="name" placeholder="e.g. Maria" required>
+    <div class="row">
+      <button type="button" class="b" id="cancel">Cancel</button>
+      <button type="submit" class="b go">Reserve</button>
+    </div>
+  </form>
+  <div id="rm" style="display:none">
+    <p class="rmtext" id="rmtext"></p>
+    <div class="row">
+      <button type="button" class="b" id="rmno">Keep</button>
+      <button type="button" class="b go" id="rmyes">Remove</button>
+    </div>
+  </div>
+</dialog>
+
+<script>
+var SLOTS = {15:"6-10 pm",16:"12-3 pm",19:"6-10 pm",20:"6-10 pm",21:"12-3 pm",22:"6-10 pm",23:"12-3 pm",26:"6-10 pm",27:"6-10 pm",28:"12-3 pm",29:"6-10 pm",30:"6-10 pm"};
+var YEAR=2026, MONTH=9, MAXSLOTS=30, MAXWAIT=4;
+var res={}, ready=false, canWrite=true, ops=null, DBX=null, bdocs=[], wdocs=[];
+var TAB="t"+Math.random().toString(36).slice(2);
+function persist(){ try{ localStorage.setItem("pb-slots2", JSON.stringify(res)); }catch(e){} }
+function esc(s){ return String(s).replace(/[&<>"]/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]}); }
+function D(d){ var x=res[d]; if(!x||!x.slots){ x=res[d]={slots:{},wait:[],wid:[]}; } return x; }
+function say(t){ var m=document.getElementById("msg"); m.textContent=t; clearTimeout(say.t); say.t=setTimeout(function(){m.textContent="";},5000); }
+
+// Booking window: opens 12:00 am the day before, closes 2 hours before the session starts
+function startOf(d){ var s=SLOTS[d]; if(!s) return null; return new Date(YEAR,MONTH,d,s.indexOf("12")===0?12:18,0); }
+function status(d){
+  var st=startOf(d); if(!st) return "none";
+  var now=new Date(), opens=new Date(YEAR,MONTH,d-1,0,0), closes=new Date(st.getTime()-2*3600000);
+  if(now<opens) return "soon";
+  if(now>=closes) return "closed";
+  return "open";
+}
+
+var cal=document.getElementById("cal");
+var first=(new Date(YEAR,MONTH,1).getDay()+6)%7, total=new Date(YEAR,MONTH+1,0).getDate();
+function buildCal(){
+  var h="<thead><tr>"+["Mo","Tu","We","Th","Fr","Sa","Su"].map(function(d){return "<th>"+d+"</th>"}).join("")+"</tr></thead><tbody>", d=1;
+  for(var r=0;r<5;r++){
+    h+="<tr>";
+    for(var c=0;c<7;c++){
+      if(r*7+c<first||d>total){h+='<td class="empty"></td>';continue;}
+      var s=SLOTS[d], stt=status(d), n=res[d]&&res[d].slots?Object.keys(res[d].slots).length:0, info=stt==="soon"?"Opens Oct "+(d-1):(stt==="closed"?"Closed":(n?n+"/"+MAXSLOTS:""));
+      h+='<td><button class="day'+(s?' has':'')+(stt==="soon"||stt==="closed"?' dim':'')+'" data-d="'+d+'"'+(stt==="none"||stt==="soon"?' disabled':'')+' aria-label="October '+d+(stt==="soon"?', not open yet':'')+'">'+d+
+        (s?'<span class="tag '+(s.indexOf("12")===0?"noon":"eve")+'">'+s+'</span>':'')+
+        (info?'<span class="cnt">'+info+'</span>':'')+'</button></td>';
+      d++;
+    }
+    h+="</tr>";
+  }
+  cal.innerHTML=h+"</tbody>";
+}
+buildCal();
+
+var calView=document.getElementById("calView"), slotView=document.getElementById("slotView"),
+    grid=document.getElementById("grid"), dlg=document.getElementById("dlg"), current=null, pick=null;
+
+function promote(){ // local mode: waiting list fills empty numbers in order
+  var x=D(current);
+  for(var i=1;i<=MAXSLOTS&&x.wait.length;i++){ if(!x.slots[i]) x.slots[i]=x.wait.shift(); }
+}
+function renderSlots(){
+  var x=D(current), m=x.slots, full=Object.keys(m).length>=MAXSLOTS, h="", w="", isOpen=status(current)==="open";
+  for(var i=1;i<=MAXSLOTS;i++){
+    h+='<button class="slot'+(m[i]?' taken':'')+'" data-n="'+i+'"'+(m[i]&&isOpen?' title="Tap to remove"':'')+(isOpen?'':' disabled')+'>'+i+'.'+(m[i]?' '+esc(m[i]):'')+'</button>';
+  }
+  grid.innerHTML=h;
+  for(var j=0;j<MAXWAIT;j++){
+    var nm=x.wait[j], off=!nm&&(!full||j!==x.wait.length);
+    w+='<button class="slot wslot'+(nm?' taken':'')+'" data-w="'+j+'"'+(off||!isOpen?' disabled':'')+'>'+(j+1)+'.'+(nm?' '+esc(nm):'')+'</button>';
+  }
+  document.getElementById("wgrid").innerHTML=w;
+  document.getElementById("whint").textContent=!isOpen?"Reservations are closed for this date.":(full?"All slots are full. Join the list and you move up when a spot opens.":"Opens when all "+MAXSLOTS+" slots are taken.");
+  var cl=new Date(startOf(current).getTime()-7200000);
+  document.getElementById("when").textContent="October "+current+" \u00b7 "+SLOTS[current]+" \u00b7 "+(isOpen?"Reservations close at "+cl.toLocaleTimeString([],{hour:"numeric",minute:"2-digit"}):"Reservations closed");
+  document.getElementById("mode").textContent=!ready?"Connecting\u2026":(!DBX?"Live sharing isn't available here, so bookings are saved on this device only.":(canWrite?"":"View only: you need contributor access to reserve."));
+}
+function refresh(){ if(slotView.style.display==="block"){ if(!dlg.open) renderSlots(); } else buildCal(); }
+function show(v){
+  calView.style.display=v==="cal"?"flex":"none";
+  slotView.style.display=v==="slot"?"block":"none";
+  window.scrollTo(0,0);
+}
+cal.addEventListener("click",function(e){
+  var b=e.target.closest(".day"); if(!b) return;
+  current=+b.dataset.d; renderSlots(); show("slot");
+});
+document.getElementById("back").onclick=function(){
+  buildCal(); show("cal");
+  var b=cal.querySelector('[data-d="'+current+'"]'); if(b) b.focus();
+};
+
+// ---- Storage: local (this device) or shared (claude db) ----
+var local={
+  reserve:async function(d,n,name){ var x=D(d); if(x.slots[n]) return {ok:false,msg:"That slot was just taken."}; x.slots[n]=name; persist(); return {ok:true}; },
+  join:async function(d,name){ var x=D(d); if(x.wait.length>=MAXWAIT) return {ok:false,msg:"The waiting list is full."}; x.wait.push(name); persist(); return {ok:true}; },
+  rmSlot:async function(d,n){ var x=D(d); delete x.slots[n]; promote(); persist(); return {ok:true}; },
+  rmWait:async function(d,i){ D(d).wait.splice(i,1); persist(); return {ok:true}; }
+};
+async function withLock(d,fn){
+  var lk=await DBX.doc("locks/d"+d).acquire({holder:TAB,ttlMs:8000});
+  if(!lk.acquired) return {ok:false,msg:"Someone else is updating this date. Try again in a moment."};
+  try{ return await fn(); }catch(e){ return {ok:false,msg:"Could not save. Please try again."}; }
+}
+var remote={
+  reserve:function(d,n,name){ return withLock(d,async function(){
+    var ref=DBX.doc("bookings/d"+d+"-s"+n), s=await ref.get();
+    if(s.exists&&s.data().name) return {ok:false,msg:"That slot was just taken."};
+    await ref.set({d:d,n:n,name:name}); return {ok:true};
+  }); },
+  join:function(d,name){ return withLock(d,async function(){
+    if(D(d).wait.length>=MAXWAIT) return {ok:false,msg:"The waiting list is full."};
+    await DBX.doc("waits/d"+d+"-"+Date.now()+"-"+Math.random().toString(36).slice(2,6)).set({d:d,name:name,t:Date.now()}); return {ok:true};
+  }); },
+  rmSlot:function(d,n){ return withLock(d,async function(){
+    await DBX.doc("bookings/d"+d+"-s"+n).delete();
+    var x=D(d);
+    if(x.wait.length){ // waiting list #1 moves into the empty number
+      await DBX.doc("bookings/d"+d+"-s"+n).set({d:d,n:n,name:x.wait[0]});
+      await DBX.doc("waits/"+x.wid[0]).delete();
+    }
+    return {ok:true};
+  }); },
+  rmWait:function(d,i){ return withLock(d,async function(){ await DBX.doc("waits/"+D(d).wid[i]).delete(); return {ok:true}; }); }
+};
+function rebuild(){
+  res={};
+  bdocs.forEach(function(s){ var v=s.data(); if(v&&v.name) D(v.d).slots[v.n]=v.name; });
+  wdocs.map(function(s){return {id:s.id,v:s.data()};}).filter(function(o){return o.v&&o.v.name;})
+    .sort(function(a,b){return a.v.t-b.v.t;}).forEach(function(o){ var x=D(o.v.d); x.wait.push(o.v.name); x.wid.push(o.id); });
+  refresh();
+}
+async function init(){
+  try{
+    var c=window.claude&&await claude.use("db");
+    if(c){
+      DBX=c; ops=remote; res={};
+      try{ var u=await claude.use("user"); if(u&&u.can){ canWrite=(await u.can("data.write"))!==false; } }catch(e){}
+      c.collection("bookings").onSnapshot(function(s){ bdocs=s.docs; rebuild(); },function(){});
+      c.collection("waits").onSnapshot(function(s){ wdocs=s.docs; rebuild(); },function(){});
+    }
+  }catch(e){}
+  if(!DBX){ ops=local; try{ res=JSON.parse(localStorage.getItem("pb-slots2")||"{}"); }catch(e){} }
+  ready=true; refresh();
+}
+
+// ---- Dialog ----
+var formEl=document.getElementById("form"), rmEl=document.getElementById("rm");
+function openDlg(kind){ formEl.style.display=kind==="form"?"block":"none"; rmEl.style.display=kind==="rm"?"block":"none"; dlg.showModal(); }
+function onPick(e){
+  var b=e.target.closest(".slot"); if(!b||b.disabled) return;
+  if(status(current)!=="open"){renderSlots();return;}
+  if(!ready){say("Connecting\u2026 try again in a moment.");return;}
+  if(!canWrite){say("View only: ask the organizer for contributor access to reserve.");return;}
+  var x=D(current), isW=b.dataset.w!==undefined;
+  pick={w:isW,i:isW?+b.dataset.w:+b.dataset.n};
+  var nm=isW?x.wait[pick.i]:x.slots[pick.i];
+  if(nm){
+    document.getElementById("rmtext").textContent="Remove "+nm+" from "+(isW?"waiting list "+(pick.i+1):"slot "+pick.i)+"?";
+    openDlg("rm");
+  }else{
+    document.getElementById("dtitle").textContent=isW?"Join waiting list":"Reserve slot "+pick.i;
+    document.getElementById("name").value="";
+    openDlg("form"); document.getElementById("name").focus();
+  }
+}
+grid.addEventListener("click",onPick);
+document.getElementById("wgrid").addEventListener("click",onPick);
+document.getElementById("cancel").onclick=function(){dlg.close();};
+document.getElementById("rmno").onclick=function(){dlg.close();};
+document.getElementById("rmyes").onclick=async function(){
+  var d=current;
+  if(status(d)!=="open"){dlg.close();renderSlots();return;}
+  var r=pick.w?await ops.rmWait(d,pick.i):await ops.rmSlot(d,pick.i);
+  dlg.close(); if(!r.ok) say(r.msg); renderSlots();
+};
+formEl.addEventListener("submit",async function(){
+  var name=document.getElementById("name").value.trim(), d=current;
+  if(status(d)!=="open"){dlg.close();renderSlots();return;}
+  if(!name){document.getElementById("name").focus();return;}
+  var r=pick.w?await ops.join(d,name):await ops.reserve(d,pick.i,name);
+  dlg.close(); if(!r.ok) say(r.msg); renderSlots();
+});
+setInterval(refresh,30000);
+init();
+</script>
+</body>
+</html>
