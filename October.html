@@ -137,13 +137,14 @@ input:focus-visible{outline:3px solid var(--ball)}
     <input type="text" id="name" autocomplete="name" placeholder="e.g. Maria" required>
     <div class="row">
       <button type="button" class="b" id="cancel">Cancel</button>
-      <button type="submit" class="b go">Reserve</button>
+      <button type="submit" class="b go" id="save">Reserve</button>
     </div>
   </form>
   <div id="rm" style="display:none">
     <p class="rmtext" id="rmtext"></p>
     <div class="row">
       <button type="button" class="b" id="rmno">Keep</button>
+      <button type="button" class="b" id="rmedit">Edit</button>
       <button type="button" class="b go" id="rmyes">Remove</button>
     </div>
   </div>
@@ -203,7 +204,7 @@ function promote(){ // local mode: waiting list fills empty numbers in order
 function renderSlots(){
   var x=D(current), m=x.slots, full=Object.keys(m).length>=MAXSLOTS, h="", w="", isOpen=status(current)==="open";
   for(var i=1;i<=MAXSLOTS;i++){
-    h+='<button class="slot'+(m[i]?' taken':'')+'" data-n="'+i+'"'+(m[i]&&isOpen?' title="Tap to remove"':'')+(isOpen?'':' disabled')+'>'+i+'.'+(m[i]?' '+esc(m[i]):'')+'</button>';
+    h+='<button class="slot'+(m[i]?' taken':'')+'" data-n="'+i+'"'+(m[i]&&isOpen?' title="Tap to edit or remove"':'')+(isOpen?'':' disabled')+'>'+i+'.'+(m[i]?' '+esc(m[i]):'')+'</button>';
   }
   grid.innerHTML=h;
   for(var j=0;j<MAXWAIT;j++){
@@ -236,7 +237,13 @@ var local={
   reserve:async function(d,n,name){ var x=D(d); if(x.slots[n]) return {ok:false,msg:"That slot was just taken."}; x.slots[n]=name; persist(); return {ok:true}; },
   join:async function(d,name){ var x=D(d); if(x.wait.length>=MAXWAIT) return {ok:false,msg:"The waiting list is full."}; x.wait.push(name); persist(); return {ok:true}; },
   rmSlot:async function(d,n){ var x=D(d); delete x.slots[n]; promote(); persist(); return {ok:true}; },
-  rmWait:async function(d,i){ D(d).wait.splice(i,1); persist(); return {ok:true}; }
+  rmWait:async function(d,i){ D(d).wait.splice(i,1); persist(); return {ok:true}; },
+  edit:async function(d,w,i,old,nm){
+    var x=D(d);
+    if((w?x.wait[i]:x.slots[i])!==old) return {ok:false,msg:"That booking just changed. Please check the list."};
+    if(w) x.wait[i]=nm; else x.slots[i]=nm;
+    persist(); return {ok:true};
+  }
 };
 var fdb=null, connErr=false;
 function toArr(v){ if(!v) return []; if(Array.isArray(v)) return v.filter(Boolean); return Object.keys(v).sort(function(a,b){return a-b}).map(function(k){return v[k]}).filter(Boolean); }
@@ -261,7 +268,12 @@ var remote={
     if(x.wait.length) x.slots[n]=x.wait.shift(); // waiting list #1 fills the empty number
     return {ok:true};
   }); },
-  rmWait:function(d,i,name){ return tx(d,function(x){ if(x.wait[i]!==name) return {ok:false,msg:"That booking just changed. Please check the list."}; x.wait.splice(i,1); return {ok:true}; }); }
+  rmWait:function(d,i,name){ return tx(d,function(x){ if(x.wait[i]!==name) return {ok:false,msg:"That booking just changed. Please check the list."}; x.wait.splice(i,1); return {ok:true}; }); },
+  edit:function(d,w,i,old,nm){ return tx(d,function(x){
+    if((w?x.wait[i]:x.slots[i])!==old) return {ok:false,msg:"That booking just changed. Please check the list."};
+    if(w) x.wait[i]=nm; else x.slots[i]=nm;
+    return {ok:true};
+  }); }
 };
 var configured=/^https:\/\//.test(DB_URL)&&DB_URL.indexOf("PASTE")<0;
 function init(){
@@ -287,13 +299,14 @@ function onPick(e){
   if(!ready){say("Connecting\u2026 try again in a moment.");return;}
   if(!canWrite){say("View only: ask the organizer for contributor access to reserve.");return;}
   var x=D(current), isW=b.dataset.w!==undefined;
-  pick={w:isW,i:isW?+b.dataset.w:+b.dataset.n};
+  pick={w:isW,i:isW?+b.dataset.w:+b.dataset.n,edit:false};
   var nm=isW?x.wait[pick.i]:x.slots[pick.i]; pick.name=nm;
   if(nm){
-    document.getElementById("rmtext").textContent="Remove "+nm+" from "+(isW?"waiting list "+(pick.i+1):"slot "+pick.i)+"?";
+    document.getElementById("rmtext").textContent="Edit or remove "+nm+" ("+(isW?"waiting list "+(pick.i+1):"slot "+pick.i)+")?";
     openDlg("rm");
   }else{
     document.getElementById("dtitle").textContent=isW?"Join waiting list":"Reserve slot "+pick.i;
+    document.getElementById("save").textContent=isW?"Join":"Reserve";
     document.getElementById("name").value="";
     openDlg("form"); document.getElementById("name").focus();
   }
@@ -302,6 +315,14 @@ grid.addEventListener("click",onPick);
 document.getElementById("wgrid").addEventListener("click",onPick);
 document.getElementById("cancel").onclick=function(){dlg.close();};
 document.getElementById("rmno").onclick=function(){dlg.close();};
+document.getElementById("rmedit").onclick=function(){
+  pick.edit=true;
+  document.getElementById("dtitle").textContent="Edit "+(pick.w?"waiting list "+(pick.i+1):"slot "+pick.i);
+  document.getElementById("save").textContent="Save";
+  var n=document.getElementById("name"); n.value=pick.name;
+  rmEl.style.display="none"; formEl.style.display="block";
+  n.focus(); n.select();
+};
 document.getElementById("rmyes").onclick=async function(){
   var d=current;
   if(status(d)!=="open"){dlg.close();renderSlots();return;}
@@ -312,7 +333,9 @@ formEl.addEventListener("submit",async function(){
   var name=document.getElementById("name").value.trim().slice(0,30), d=current;
   if(status(d)!=="open"){dlg.close();renderSlots();return;}
   if(!name){document.getElementById("name").focus();return;}
-  var r=pick.w?await ops.join(d,name):await ops.reserve(d,pick.i,name);
+  if(pick.edit&&name===pick.name){dlg.close();return;}
+  var r=pick.edit?await ops.edit(d,pick.w,pick.i,pick.name,name)
+    :(pick.w?await ops.join(d,name):await ops.reserve(d,pick.i,name));
   dlg.close(); if(!r.ok) say(r.msg); renderSlots();
 });
 setInterval(refresh,30000);
