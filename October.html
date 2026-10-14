@@ -49,7 +49,7 @@ td.empty{}
 #slotView h2{margin:0;font-size:clamp(24px,5vw,34px);font-weight:900;display:flex;align-items:center;gap:10px}
 #slotView h2 svg{width:30px;color:var(--ball);fill:currentColor}
 .when{font-size:13px;font-style:normal;font-family:"Trebuchet MS",Arial,sans-serif;color:var(--mute);margin:6px 0 0}
-.screenshot-reminder{font-size:12px;font-style:normal;font-family:"Trebuchet MS",Arial,sans-serif;color:var(--ball);font-weight:bold;margin:4px 0 0}
+.screenshot-reminder{font-size:15px;font-style:normal;font-family:"Trebuchet MS",Arial,sans-serif;color:var(--ball);font-weight:900;margin:6px 0 2px}
 .grid{display:grid;grid-template-columns:repeat(3,1fr);grid-template-rows:repeat(10,auto);grid-auto-flow:column;gap:6px clamp(8px,4vw,60px);margin:28px 0 30px;max-width:900px}
 .slot{all:unset;box-sizing:border-box;display:block;padding:8px 6px;font-size:clamp(14px,3.6vw,26px);font-weight:900;cursor:pointer;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;border-radius:8px}
 .slot:hover{background:rgba(138,108,255,.22)}
@@ -83,73 +83,73 @@ input:focus-visible{outline:3px solid var(--ball)}
 </head>
 <body>
 <svg width="0" height="0" style="position:absolute" aria-hidden="true">
-  <symbol id="paddle" viewBox="0 0 100 170">
-    <path d="M50 4C23 4 6 24 6 54c0 28 16 48 34 52v10h20v-10c18-4 34-24 34-52C94 24 77 4 50 4z"/>
-    <rect x="41" y="112" width="18" height="52" rx="8"/>
-    <path d="M50 14c-20 0-33 16-33 40 0 22 12 40 28 44" fill="none" stroke="#0a0922" stroke-opacity=".35" stroke-width="4" stroke-linecap="round"/>
-  </symbol>
-  <symbol id="ball" viewBox="0 0 100 100">
-    <circle cx="50" cy="50" r="48"/>
-    <g fill="#0a0922" fill-opacity=".45"><circle cx="50" cy="22" r="6"/><circle cx="26" cy="36" r="6"/><circle cx="74" cy="36" r="6"/><circle cx="50" cy="50" r="6"/><circle cx="22" cy="62" r="6"/><circle cx="78" cy="62" r="6"/><circle cx="38" cy="76" r="6"/><circle cx="62" cy="76" r="6"/></g>
-  </symbol>
+<symbol id="paddle" viewBox="0 0 100 170">
+<path d="M50 4C23 4 6 24 6 54c0 28 16 48 34 52v10h20v-10c18-4 34-24 34-52C94 24 77 4 50 4z"/>
+<rect x="41" y="112" width="18" height="52" rx="8"/>
+<path d="M50 14c-20 0-33 16-33 40 0 22 12 40 28 44" fill="none" stroke="#0a0922" stroke-opacity=".35" stroke-width="4" stroke-linecap="round"/>
+</symbol>
+<symbol id="ball" viewBox="0 0 100 100">
+<circle cx="50" cy="50" r="48"/>
+<g fill="#0a0922" fill-opacity=".45"><circle cx="50" cy="22" r="6"/><circle cx="26" cy="36" r="6"/><circle cx="74" cy="36" r="6"/><circle cx="50" cy="50" r="6"/><circle cx="22" cy="62" r="6"/><circle cx="78" cy="62" r="6"/><circle cx="38" cy="76" r="6"/><circle cx="62" cy="76" r="6"/></g>
+</symbol>
 </svg>
 
 <div class="bg" aria-hidden="true">
-  <svg class="p1" viewBox="0 0 100 170"><use href="#paddle"/></svg>
-  <svg class="p2" viewBox="0 0 100 170"><use href="#paddle"/></svg>
-  <svg class="b1" viewBox="0 0 100 100"><use href="#ball"/></svg>
-  <svg class="b2" viewBox="0 0 100 100"><use href="#ball"/></svg>
+<svg class="p1" viewBox="0 0 100 170"><use href="#paddle"/></svg>
+<svg class="p2" viewBox="0 0 100 170"><use href="#paddle"/></svg>
+<svg class="b1" viewBox="0 0 100 100"><use href="#ball"/></svg>
+<svg class="b2" viewBox="0 0 100 100"><use href="#ball"/></svg>
 </div>
 
 <div id="calView">
-  <div class="card">
-    <div class="hero" aria-hidden="true">
-      <svg class="pa a" viewBox="0 0 100 170"><use href="#paddle"/></svg>
-      <svg class="pa b" viewBox="0 0 100 170"><use href="#paddle"/></svg>
-      <svg class="ball" viewBox="0 0 100 100"><use href="#ball"/></svg>
-    </div>
-    <div class="head">
-      <h1>october</h1>
-      <div class="club">Sta. Elena Village<br>Pickleball<br>Club</div>
-    </div>
-    <div class="cal-wrap"><table id="cal" aria-label="October reservation calendar"></table></div>
-    <p class="note"><svg viewBox="0 0 100 100" aria-hidden="true"><use href="#ball"/></svg><span>SPOTS ARE LIMITED<br>CONTACT US TO SECURE YOUR SLOT<br>AND ENJOY THE PLAY WITHOUT A WORRY.</span></p>
-  </div>
+<div class="card">
+<div class="hero" aria-hidden="true">
+<svg class="pa a" viewBox="0 0 100 170"><use href="#paddle"/></svg>
+<svg class="pa b" viewBox="0 0 100 170"><use href="#paddle"/></svg>
+<svg class="ball" viewBox="0 0 100 100"><use href="#ball"/></svg>
+</div>
+<div class="head">
+<h1>october</h1>
+<div class="club">Sta. Elena Village<br>Pickleball<br>Club</div>
+</div>
+<div class="cal-wrap"><table id="cal" aria-label="October reservation calendar"></table></div>
+<p class="note"><svg viewBox="0 0 100 100" aria-hidden="true"><use href="#ball"/></svg><span>SPOTS ARE LIMITED<br>CONTACT US TO SECURE YOUR SLOT<br>AND ENJOY THE PLAY WITHOUT A WORRY.</span></p>
+</div>
 </div>
 
 <div id="slotView">
-  <h2><svg viewBox="0 0 100 100" aria-hidden="true"><use href="#ball"/></svg>Reserve Your Slot</h2>
-  <p class="screenshot-reminder">📷 Screenshot your slot</p>
-  <p class="when" id="when"></p>
-  <p class="when" id="mode"></p>
-  <p class="when" id="msg" role="status" style="color:var(--pink)"></p>
-  <div class="grid" id="grid"></div>
-  <div class="wl">
-    <h3>Waiting list:</h3>
-    <p class="hint" id="whint"></p>
-    <div class="wgrid" id="wgrid"></div>
-  </div>
-  <button class="back" id="back">&larr; Back</button>
+<h2><svg viewBox="0 0 100 100" aria-hidden="true"><use href="#ball"/></svg>Reserve Your Slot:</h2>
+<p class="screenshot-reminder">Reminder: Screenshot your slot</p>
+<p class="when" id="when"></p>
+<p class="when" id="mode"></p>
+<p class="when" id="msg" role="status" style="color:var(--pink)"></p>
+<div class="grid" id="grid"></div>
+<div class="wl">
+<h3>Waiting list:</h3>
+<p class="hint" id="whint"></p>
+<div class="wgrid" id="wgrid"></div>
+</div>
+<button class="back" id="back">&larr; Back</button>
 </div>
 
 <dialog id="dlg">
-  <form id="form" method="dialog" onsubmit="return false">
-    <h3 id="dtitle">Reserve slot</h3>
-    <label for="name">Your name</label>
-    <input type="text" id="name" autocomplete="name" placeholder="e.g. Maria" required>
-    <div class="row">
-      <button type="button" class="b" id="cancel">Cancel</button>
-      <button type="submit" class="b go" id="save">Reserve</button>
-    </div>
-  </form>
-  <div id="rm" style="display:none">
-    <p class="rmtext" id="rmtext"></p>
-    <div class="row">
-      <button type="button" class="b" id="rmno">Keep</button>
-      <button type="button" class="b" id="rmedit">Edit</button>
-      <button type="button" class="b go" id="rmyes">Remove</button>
-    </div>
-  </div>
+<form id="form" method="dialog" onsubmit="return false">
+<h3 id="dtitle">Reserve slot</h3>
+<label for="name">Your name</label>
+<input type="text" id="name" autocomplete="name" placeholder="e.g. Maria" required>
+<div class="row">
+<button type="button" class="b" id="cancel">Cancel</button>
+<button type="submit" class="b go" id="save">Reserve</button>
+</div>
+</form>
+<div id="rm" style="display:none">
+<p class="rmtext" id="rmtext"></p>
+<div class="row">
+<button type="button" class="b" id="rmno">Keep</button>
+<button type="button" class="b" id="rmedit">Edit</button>
+<button type="button" class="b go" id="rmyes">Remove</button>
+</div>
+</div>
 </dialog>
 
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
@@ -169,69 +169,69 @@ function say(t){ var m=document.getElementById("msg"); m.textContent=t; clearTim
 // Booking window: opens 12:00 am the day before, closes 2 hours before the session starts
 function startOf(d){ var s=SLOTS[d]; if(!s) return null; return new Date(YEAR,MONTH,d,s.indexOf("12")===0?12:18,0); }
 function status(d){
-  var st=startOf(d); if(!st) return "none";
-  var now=new Date(), opens=new Date(YEAR,MONTH,d-1,0,0), closes=new Date(st.getTime()-2*3600000);
-  if(now<opens) return "soon";
-  if(now>=closes) return "closed";
-  return "open";
+var st=startOf(d); if(!st) return "none";
+var now=new Date(), opens=new Date(YEAR,MONTH,d-1,0,0), closes=new Date(st.getTime()-2*3600000);
+if(now<opens) return "soon";
+if(now>=closes) return "closed";
+return "open";
 }
 
 var cal=document.getElementById("cal");
 var first=(new Date(YEAR,MONTH,1).getDay()+6)%7, total=new Date(YEAR,MONTH+1,0).getDate();
 function buildCal(){
-  var h="<thead><tr>"+["Mo","Tu","We","Th","Fr","Sa","Su"].map(function(d){return "<th>"+d+"</th>"}).join("")+"</tr></thead><tbody>", d=1;
-  for(var r=0;r<5;r++){
-    h+="<tr>";
-    for(var c=0;c<7;c++){
-      if(r*7+c<first||d>total){h+='<td class="empty"></td>';continue;}
-      var s=SLOTS[d], stt=status(d), n=res[d]&&res[d].slots?Object.keys(res[d].slots).length:0, info=stt==="soon"?"Opens Oct "+(d-1):(stt==="closed"?"Closed":(n?n+"/"+MAXSLOTS:""));
-      h+='<td><button class="day'+(s?' has':'')+(stt==="soon"||stt==="closed"?' dim':'')+'" data-d="'+d+'"'+(stt==="none"||stt==="soon"?' disabled':'')+' aria-label="October '+d+(stt==="soon"?', not open yet':'')+'">'+d+
-        (s?'<span class="tag '+(s.indexOf("12")===0?"noon":"eve")+'">'+s+'</span>':'')+
-        (info?'<span class="cnt">'+info+'</span>':'')+'</button></td>';
-      d++;
-    }
-    h+="</tr>";
-  }
-  cal.innerHTML=h+"</tbody>";
+var h="<thead><tr>"+["Mo","Tu","We","Th","Fr","Sa","Su"].map(function(d){return "<th>"+d+"</th>"}).join("")+"</tr></thead><tbody>", d=1;
+for(var r=0;r<5;r++){
+h+="<tr>";
+for(var c=0;c<7;c++){
+if(r*7+c<first||d>total){h+='<td class="empty"></td>';continue;}
+var s=SLOTS[d], stt=status(d), n=res[d]&&res[d].slots?Object.keys(res[d].slots).length:0, info=stt==="soon"?"Opens Oct "+(d-1):(stt==="closed"?"Closed":(n?n+"/"+MAXSLOTS:""));
+h+='<td><button class="day'+(s?' has':'')+(stt==="soon"||stt==="closed"?' dim':'')+'" data-d="'+d+'"'+(stt==="none"||stt==="soon"?' disabled':'')+' aria-label="October '+d+(stt==="soon"?', not open yet':'')+'">'+d+
+(s?'<span class="tag '+(s.indexOf("12")===0?"noon":"eve")+'">'+s+'</span>':'')+
+(info?'<span class="cnt">'+info+'</span>':'')+'</button></td>';
+d++;
+}
+h+="</tr>";
+}
+cal.innerHTML=h+"</tbody>";
 }
 buildCal();
 
 var calView=document.getElementById("calView"), slotView=document.getElementById("slotView"),
-    grid=document.getElementById("grid"), dlg=document.getElementById("dlg"), current=null, pick=null;
+grid=document.getElementById("grid"), dlg=document.getElementById("dlg"), current=null, pick=null;
 
 function promote(){ // local mode: waiting list fills empty numbers in order
-  var x=D(current);
-  for(var i=1;i<=MAXSLOTS&&x.wait.length;i++){ if(!x.slots[i]) x.slots[i]=x.wait.shift(); }
+var x=D(current);
+for(var i=1;i<=MAXSLOTS&&x.wait.length;i++){ if(!x.slots[i]) x.slots[i]=x.wait.shift(); }
 }
 function renderSlots(){
-  var x=D(current), m=x.slots, full=Object.keys(m).length>=MAXSLOTS, h="", w="", isOpen=status(current)==="open";
-  for(var i=1;i<=MAXSLOTS;i++){
-    h+='<button class="slot'+(m[i]?' taken':'')+'" data-n="'+i+'"'+(m[i]&&isOpen?' title="Tap to edit or remove"':'')+(isOpen?'':' disabled')+'>'+i+'.'+(m[i]?' '+esc(m[i]):'')+'</button>';
-  }
-  grid.innerHTML=h;
-  for(var j=0;j<MAXWAIT;j++){
-    var nm=x.wait[j], off=!nm&&(!full||j!==x.wait.length);
-    w+='<button class="slot wslot'+(nm?' taken':'')+'" data-w="'+j+'"'+(off||!isOpen?' disabled':'')+'>'+(j+1)+'.'+(nm?' '+esc(nm):'')+'</button>';
-  }
-  document.getElementById("wgrid").innerHTML=w;
-  document.getElementById("whint").textContent=!isOpen?"Reservations are closed for this date.":(full?"All slots are full. Join the list and you move up when a spot opens.":"Opens when all "+MAXSLOTS+" slots are taken.");
-  var cl=new Date(startOf(current).getTime()-7200000);
-  document.getElementById("when").textContent="October "+current+" \u00b7 "+SLOTS[current]+" \u00b7 "+(isOpen?"Reservations close at "+cl.toLocaleTimeString([],{hour:"numeric",minute:"2-digit"}):"Reservations closed");
-  document.getElementById("mode").textContent=!ready?"Connecting\u2026":(!fdb?"Setup needed: add your Firebase URL at the top of the script. Until then bookings are saved on this device only.":(connErr?"Can't reach the booking server right now.":""));
+var x=D(current), m=x.slots, full=Object.keys(m).length>=MAXSLOTS, h="", w="", isOpen=status(current)==="open";
+for(var i=1;i<=MAXSLOTS;i++){
+h+='<button class="slot'+(m[i]?' taken':'')+'" data-n="'+i+'"'+(m[i]&&isOpen?' title="Tap to edit or remove"':'')+(isOpen?'':' disabled')+'>'+i+'.'+(m[i]?' '+esc(m[i]):'')+'</button>';
+}
+grid.innerHTML=h;
+for(var j=0;j<MAXWAIT;j++){
+var nm=x.wait[j], off=!nm&&(!full||j!==x.wait.length);
+w+='<button class="slot wslot'+(nm?' taken':'')+'" data-w="'+j+'"'+(off||!isOpen?' disabled':'')+'>'+(j+1)+'.'+(nm?' '+esc(nm):'')+'</button>';
+}
+document.getElementById("wgrid").innerHTML=w;
+document.getElementById("whint").textContent=!isOpen?"Reservations are closed for this date.":(full?"All slots are full. Join the list and you move up when a spot opens.":"Opens when all "+MAXSLOTS+" slots are taken.");
+var cl=new Date(startOf(current).getTime()-7200000);
+document.getElementById("when").textContent="October "+current+" \u00b7 "+SLOTS[current]+" \u00b7 "+(isOpen?"Reservations close at "+cl.toLocaleTimeString([],{hour:"numeric",minute:"2-digit"}):"Reservations closed");
+document.getElementById("mode").textContent=!ready?"Connecting\u2026":(!fdb?"Setup needed: add your Firebase URL at the top of the script. Until then bookings are saved on this device only.":(connErr?"Can't reach the booking server right now.":""));
 }
 function refresh(){ if(slotView.style.display==="block"){ if(!dlg.open) renderSlots(); } else buildCal(); }
 function show(v){
-  calView.style.display=v==="cal"?"flex":"none";
-  slotView.style.display=v==="slot"?"block":"none";
-  window.scrollTo(0,0);
+calView.style.display=v==="cal"?"flex":"none";
+slotView.style.display=v==="slot"?"block":"none";
+window.scrollTo(0,0);
 }
 cal.addEventListener("click",function(e){
-  var b=e.target.closest(".day"); if(!b) return;
-  current=+b.dataset.d; renderSlots(); show("slot");
+var b=e.target.closest(".day"); if(!b) return;
+current=+b.dataset.d; renderSlots(); show("slot");
 });
 document.getElementById("back").onclick=function(){
-  buildCal(); show("cal");
-  var b=cal.querySelector('[data-d="'+current+'"]'); if(b) b.focus();
+buildCal(); show("cal");
+var b=cal.querySelector('[data-d="'+current+'"]'); if(b) b.focus();
 };
 
 // ---- Race Condition Helper: Find next available slot number ----
@@ -247,8 +247,49 @@ function findNextAvailable(slotsMap, startNum, maxSlots) {
 
 // ---- Storage: Firebase Realtime Database (shared) or this device (fallback) ----
 var local={
-  reserve:async function(d,n,name){ 
-    var x=D(d); 
+reserve:async function(d,n,name){ 
+  var x=D(d); 
+  let targetSlot = n;
+  if (x.slots[targetSlot]) {
+    targetSlot = findNextAvailable(x.slots, n, MAXSLOTS);
+  }
+  if (!targetSlot) {
+    if (x.wait.length >= MAXWAIT) return {ok:false, msg:"All slots and the waiting list are full."};
+    x.wait.push(name);
+    persist();
+    return {ok:true};
+  }
+  x.slots[targetSlot] = name; 
+  persist(); 
+  return {ok:true}; 
+},
+join:async function(d,name){ var x=D(d); if(x.wait.length>=MAXWAIT) return {ok:false,msg:"The waiting list is full."}; x.wait.push(name); persist(); return {ok:true}; },
+rmSlot:async function(d,n){ var x=D(d); delete x.slots[n]; promote(); persist(); return {ok:true}; },
+rmWait:async function(d,i){ D(d).wait.splice(i,1); persist(); return {ok:true}; },
+edit:async function(d,w,i,old,nm){
+var x=D(d);
+if((w?x.wait[i]:x.slots[i])!==old) return {ok:false,msg:"That booking just changed. Please check the list."};
+if(w) x.wait[i]=nm; else x.slots[i]=nm;
+persist(); return {ok:true};
+}
+};
+var fdb=null, connErr=false;
+function toArr(v){ if(!v) return []; if(Array.isArray(v)) return v.filter(Boolean); return Object.keys(v).sort(function(a,b){return a-b}).map(function(k){return v[k]}).filter(Boolean); }
+function normSlots(v){ var o={}; if(!v) return o; Object.keys(v).forEach(function(k){ if(v[k]) o[k]=v[k]; }); return o; }
+// Every change runs as a transaction on that date, so two people booking at once never overwrite each other.
+function tx(d,fn){
+var out={ok:false,msg:"Could not save. Please try again."};
+return fdb.ref("pb/d"+d).transaction(function(cur){
+var x={slots:normSlots(cur&&cur.slots),wait:toArr(cur&&cur.wait)};
+out=fn(x);
+if(!out.ok) return;
+return (Object.keys(x.slots).length||x.wait.length)?x:null;
+}).then(function(t){ return t.committed?out:(out.ok?{ok:false,msg:"Could not save. Please try again."}:out); })
+.catch(function(){ return {ok:false,msg:"Could not save. Check your connection."}; });
+}
+var remote={
+reserve:function(d,n,name){ 
+  return tx(d,function(x){ 
     let targetSlot = n;
     if (x.slots[targetSlot]) {
       targetSlot = findNextAvailable(x.slots, n, MAXSLOTS);
@@ -256,132 +297,88 @@ var local={
     if (!targetSlot) {
       if (x.wait.length >= MAXWAIT) return {ok:false, msg:"All slots and the waiting list are full."};
       x.wait.push(name);
-      persist();
       return {ok:true};
     }
     x.slots[targetSlot] = name; 
-    persist(); 
     return {ok:true}; 
-  },
-  join:async function(d,name){ var x=D(d); if(x.wait.length>=MAXWAIT) return {ok:false,msg:"The waiting list is full."}; x.wait.push(name); persist(); return {ok:true}; },
-  rmSlot:async function(d,n){ var x=D(d); delete x.slots[n]; promote(); persist(); return {ok:true}; },
-  rmWait:async function(d,i){ D(d).wait.splice(i,1); persist(); return {ok:true}; },
-  edit:async function(d,w,i,old,nm){
-    var x=D(d);
-    if((w?x.wait[i]:x.slots[i])!==old) return {ok:false,msg:"That booking just changed. Please check the list."};
-    if(w) x.wait[i]=nm; else x.slots[i]=nm;
-    persist(); return {ok:true};
-  }
+  }); 
+},
+join:function(d,name){ return tx(d,function(x){ if(x.wait.length>=MAXWAIT) return {ok:false,msg:"The waiting list is full."}; x.wait.push(name); return {ok:true}; }); },
+rmSlot:function(d,n,name){ return tx(d,function(x){
+if(x.slots[n]!==name) return {ok:false,msg:"That booking just changed. Please check the list."};
+delete x.slots[n];
+if(x.wait.length) x.slots[n]=x.wait.shift(); // waiting list #1 fills the empty number
+return {ok:true};
+}); },
+rmWait:function(d,i,name){ return tx(d,function(x){ if(x.wait[i]!==name) return {ok:false,msg:"That booking just changed. Please check the list."}; x.wait.splice(i,1); return {ok:true}; }); },
+edit:function(d,w,i,old,nm){ return tx(d,function(x){
+if((w?x.wait[i]:x.slots[i])!==old) return {ok:false,msg:"That booking just changed. Please check the list."};
+if(w) x.wait[i]=nm; else x.slots[i]=nm;
+return {ok:true};
+}); }
 };
-
-var fdb=null, connErr=false;
-function toArr(v){ if(!v) return []; if(Array.isArray(v)) return v.filter(Boolean); return Object.keys(v).sort(function(a,b){return a-b}).map(function(k){return v[k]}).filter(Boolean); }
-function normSlots(v){ var o={}; if(!v) return o; Object.keys(v).forEach(function(k){ if(v[k]) o[k]=v[k]; }); return o; }
-
-function tx(d,fn){
-  var out={ok:false,msg:"Could not save. Please try again."};
-  return fdb.ref("pb/d"+d).transaction(function(cur){
-    var x={slots:normSlots(cur&&cur.slots),wait:toArr(cur&&cur.wait)};
-    out=fn(x);
-    if(!out.ok) return;
-    return (Object.keys(x.slots).length||x.wait.length)?x:null;
-  }).then(function(t){ return t.committed?out:(out.ok?{ok:false,msg:"Could not save. Please try again."}:out); })
-    .catch(function(){ return {ok:false,msg:"Could not save. Check your connection."}; });
-}
-
-var remote={
-  reserve:function(d,n,name){ 
-    return tx(d,function(x){ 
-      let targetSlot = n;
-      if (x.slots[targetSlot]) {
-        targetSlot = findNextAvailable(x.slots, n, MAXSLOTS);
-      }
-      if (!targetSlot) {
-        if (x.wait.length >= MAXWAIT) return {ok:false, msg:"All slots and the waiting list are full."};
-        x.wait.push(name);
-        return {ok:true};
-      }
-      x.slots[targetSlot] = name; 
-      return {ok:true}; 
-    }); 
-  },
-  join:function(d,name){ return tx(d,function(x){ if(x.wait.length>=MAXWAIT) return {ok:false,msg:"The waiting list is full."}; x.wait.push(name); return {ok:true}; }); },
-  rmSlot:function(d,n,name){ return tx(d,function(x){
-    if(x.slots[n]!==name) return {ok:false,msg:"That booking just changed. Please check the list."};
-    delete x.slots[n];
-    if(x.wait.length) x.slots[n]=x.wait.shift(); 
-    return {ok:true};
-  }); },
-  rmWait:function(d,i,name){ return tx(d,function(x){ if(x.wait[i]!==name) return {ok:false,msg:"That booking just changed. Please check the list."}; x.wait.splice(i,1); return {ok:true}; }); },
-  edit:function(d,w,i,old,nm){ return tx(d,function(x){
-    if((w?x.wait[i]:x.slots[i])!==old) return {ok:false,msg:"That booking just changed. Please check the list."};
-    if(w) x.wait[i]=nm; else x.slots[i]=nm;
-    return {ok:true};
-  }); }
-};
-
 var configured=/^https:\/\//.test(DB_URL)&&DB_URL.indexOf("PASTE")<0;
 function init(){
-  if(configured&&window.firebase){
-    try{
-      firebase.initializeApp({databaseURL:DB_URL}); fdb=firebase.database(); ops=remote;
-      fdb.ref("pb").on("value",function(s){
-        connErr=false; var v=s.val()||{}; res={};
-        Object.keys(v).forEach(function(k){ var d=+k.slice(1), x=v[k]||{}; res[d]={slots:normSlots(x.slots),wait:toArr(x.wait),wid:[]}; });
-        ready=true; refresh();
-      },function(){ connErr=true; ready=true; refresh(); });
-    }catch(e){ fdb=null; }
-  }
-  if(!fdb){ ops=local; try{ res=JSON.parse(localStorage.getItem("pb-slots2")||"{}"); }catch(e){} ready=true; refresh(); }
+if(configured&&window.firebase){
+try{
+firebase.initializeApp({databaseURL:DB_URL}); fdb=firebase.database(); ops=remote;
+fdb.ref("pb").on("value",function(s){
+connErr=false; var v=s.val()||{}; res={};
+Object.keys(v).forEach(function(k){ var d=+k.slice(1), x=v[k]||{}; res[d]={slots:normSlots(x.slots),wait:toArr(x.wait),wid:[]}; });
+ready=true; refresh();
+},function(){ connErr=true; ready=true; refresh(); });
+}catch(e){ fdb=null; }
+}
+if(!fdb){ ops=local; try{ res=JSON.parse(localStorage.getItem("pb-slots2")||"{}"); }catch(e){} ready=true; refresh(); }
 }
 
 // ---- Dialog ----
 var formEl=document.getElementById("form"), rmEl=document.getElementById("rm");
 function openDlg(kind){ formEl.style.display=kind==="form"?"block":"none"; rmEl.style.display=kind==="rm"?"block":"none"; dlg.showModal(); }
 function onPick(e){
-  var b=e.target.closest(".slot"); if(!b||b.disabled) return;
-  if(status(current)!=="open"){renderSlots();return;}
-  if(!ready){say("Connecting\u2026 try again in a moment.");return;}
-  if(!canWrite){say("View only: ask the organizer for contributor access to reserve.");return;}
-  var x=D(current), isW=b.dataset.w!==undefined;
-  pick={w:isW,i:isW?+b.dataset.w:+b.dataset.n,edit:false};
-  var nm=isW?x.wait[pick.i]:x.slots[pick.i]; pick.name=nm;
-  if(nm){
-    document.getElementById("rmtext").textContent="Edit or remove "+nm+" ("+(isW?"waiting list "+(pick.i+1):"slot "+pick.i)+")?";
-    openDlg("rm");
-  }else{
-    document.getElementById("dtitle").textContent=isW?"Join waiting list":"Reserve slot "+pick.i;
-    document.getElementById("save").textContent=isW?"Join":"Reserve";
-    document.getElementById("name").value="";
-    openDlg("form"); document.getElementById("name").focus();
-  }
+var b=e.target.closest(".slot"); if(!b||b.disabled) return;
+if(status(current)!=="open"){renderSlots();return;}
+if(!ready){say("Connecting\u2026 try again in a moment.");return;}
+if(!canWrite){say("View only: ask the organizer for contributor access to reserve.");return;}
+var x=D(current), isW=b.dataset.w!==undefined;
+pick={w:isW,i:isW?+b.dataset.w:+b.dataset.n,edit:false};
+var nm=isW?x.wait[pick.i]:x.slots[pick.i]; pick.name=nm;
+if(nm){
+document.getElementById("rmtext").textContent="Edit or remove "+nm+" ("+(isW?"waiting list "+(pick.i+1):"slot "+pick.i)+")?";
+openDlg("rm");
+}else{
+document.getElementById("dtitle").textContent=isW?"Join waiting list":"Reserve slot "+pick.i;
+document.getElementById("save").textContent=isW?"Join":"Reserve";
+document.getElementById("name").value="";
+openDlg("form"); document.getElementById("name").focus();
+}
 }
 grid.addEventListener("click",onPick);
 document.getElementById("wgrid").addEventListener("click",onPick);
 document.getElementById("cancel").onclick=function(){dlg.close();};
 document.getElementById("rmno").onclick=function(){dlg.close();};
 document.getElementById("rmedit").onclick=function(){
-  pick.edit=true;
-  document.getElementById("dtitle").textContent="Edit "+(pick.w?"waiting list "+(pick.i+1):"slot "+pick.i);
-  document.getElementById("save").textContent="Save";
-  var n=document.getElementById("name"); n.value=pick.name;
-  rmEl.style.display="none"; formEl.style.display="block";
-  n.focus(); n.select();
+pick.edit=true;
+document.getElementById("dtitle").textContent="Edit "+(pick.w?"waiting list "+(pick.i+1):"slot "+pick.i);
+document.getElementById("save").textContent="Save";
+var n=document.getElementById("name"); n.value=pick.name;
+rmEl.style.display="none"; formEl.style.display="block";
+n.focus(); n.select();
 };
 document.getElementById("rmyes").onclick=async function(){
-  var d=current;
-  if(status(d)!=="open"){dlg.close();renderSlots();return;}
-  var r=pick.w?await ops.rmWait(d,pick.i,pick.name):await ops.rmSlot(d,pick.i,pick.name);
-  dlg.close(); if(!r.ok) say(r.msg); renderSlots();
+var d=current;
+if(status(d)!=="open"){dlg.close();renderSlots();return;}
+var r=pick.w?await ops.rmWait(d,pick.i,pick.name):await ops.rmSlot(d,pick.i,pick.name);
+dlg.close(); if(!r.ok) say(r.msg); renderSlots();
 };
 formEl.addEventListener("submit",async function(){
-  var name=document.getElementById("name").value.trim().slice(0,30), d=current;
-  if(status(d)!=="open"){dlg.close();renderSlots();return;}
-  if(!name){document.getElementById("name").focus();return;}
-  if(pick.edit&&name===pick.name){dlg.close();return;}
-  var r=pick.edit?await ops.edit(d,pick.w,pick.i,pick.name,name)
-    :(pick.w?await ops.join(d,name):await ops.reserve(d,pick.i,name));
-  dlg.close(); if(!r.ok) say(r.msg); renderSlots();
+var name=document.getElementById("name").value.trim().slice(0,30), d=current;
+if(status(d)!=="open"){dlg.close();renderSlots();return;}
+if(!name){document.getElementById("name").focus();return;}
+if(pick.edit&&name===pick.name){dlg.close();return;}
+var r=pick.edit?await ops.edit(d,pick.w,pick.i,pick.name,name)
+:(pick.w?await ops.join(d,name):await ops.reserve(d,pick.i,name));
+dlg.close(); if(!r.ok) say(r.msg); renderSlots();
 });
 setInterval(refresh,30000);
 init();
