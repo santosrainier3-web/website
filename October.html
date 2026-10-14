@@ -49,6 +49,7 @@ td.empty{}
 #slotView h2{margin:0;font-size:clamp(24px,5vw,34px);font-weight:900;display:flex;align-items:center;gap:10px}
 #slotView h2 svg{width:30px;color:var(--ball);fill:currentColor}
 .when{font-size:13px;font-style:normal;font-family:"Trebuchet MS",Arial,sans-serif;color:var(--mute);margin:6px 0 0}
+.screenshot-reminder{font-size:12px;font-style:normal;font-family:"Trebuchet MS",Arial,sans-serif;color:var(--ball);font-weight:bold;margin:4px 0 0}
 .grid{display:grid;grid-template-columns:repeat(3,1fr);grid-template-rows:repeat(10,auto);grid-auto-flow:column;gap:6px clamp(8px,4vw,60px);margin:28px 0 30px;max-width:900px}
 .slot{all:unset;box-sizing:border-box;display:block;padding:8px 6px;font-size:clamp(14px,3.6vw,26px);font-weight:900;cursor:pointer;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;border-radius:8px}
 .slot:hover{background:rgba(138,108,255,.22)}
@@ -117,7 +118,8 @@ input:focus-visible{outline:3px solid var(--ball)}
 </div>
 
 <div id="slotView">
-  <h2><svg viewBox="0 0 100 100" aria-hidden="true"><use href="#ball"/></svg>Slot:</h2>
+  <h2><svg viewBox="0 0 100 100" aria-hidden="true"><use href="#ball"/></svg>Reserve Your Slot</h2>
+  <p class="screenshot-reminder">📷 Screenshot your slot</p>
   <p class="when" id="when"></p>
   <p class="when" id="mode"></p>
   <p class="when" id="msg" role="status" style="color:var(--pink)"></p>
@@ -232,9 +234,35 @@ document.getElementById("back").onclick=function(){
   var b=cal.querySelector('[data-d="'+current+'"]'); if(b) b.focus();
 };
 
+// ---- Race Condition Helper: Find next available slot number ----
+function findNextAvailable(slotsMap, startNum, maxSlots) {
+  for (let i = startNum; i <= maxSlots; i++) {
+    if (!slotsMap[i]) return i;
+  }
+  for (let i = 1; i < startNum; i++) {
+    if (!slotsMap[i]) return i;
+  }
+  return null;
+}
+
 // ---- Storage: Firebase Realtime Database (shared) or this device (fallback) ----
 var local={
-  reserve:async function(d,n,name){ var x=D(d); if(x.slots[n]) return {ok:false,msg:"That slot was just taken."}; x.slots[n]=name; persist(); return {ok:true}; },
+  reserve:async function(d,n,name){ 
+    var x=D(d); 
+    let targetSlot = n;
+    if (x.slots[targetSlot]) {
+      targetSlot = findNextAvailable(x.slots, n, MAXSLOTS);
+    }
+    if (!targetSlot) {
+      if (x.wait.length >= MAXWAIT) return {ok:false, msg:"All slots and the waiting list are full."};
+      x.wait.push(name);
+      persist();
+      return {ok:true};
+    }
+    x.slots[targetSlot] = name; 
+    persist(); 
+    return {ok:true}; 
+  },
   join:async function(d,name){ var x=D(d); if(x.wait.length>=MAXWAIT) return {ok:false,msg:"The waiting list is full."}; x.wait.push(name); persist(); return {ok:true}; },
   rmSlot:async function(d,n){ var x=D(d); delete x.slots[n]; promote(); persist(); return {ok:true}; },
   rmWait:async function(d,i){ D(d).wait.splice(i,1); persist(); return {ok:true}; },
@@ -245,10 +273,11 @@ var local={
     persist(); return {ok:true};
   }
 };
+
 var fdb=null, connErr=false;
 function toArr(v){ if(!v) return []; if(Array.isArray(v)) return v.filter(Boolean); return Object.keys(v).sort(function(a,b){return a-b}).map(function(k){return v[k]}).filter(Boolean); }
 function normSlots(v){ var o={}; if(!v) return o; Object.keys(v).forEach(function(k){ if(v[k]) o[k]=v[k]; }); return o; }
-// Every change runs as a transaction on that date, so two people booking at once never overwrite each other.
+
 function tx(d,fn){
   var out={ok:false,msg:"Could not save. Please try again."};
   return fdb.ref("pb/d"+d).transaction(function(cur){
@@ -259,13 +288,28 @@ function tx(d,fn){
   }).then(function(t){ return t.committed?out:(out.ok?{ok:false,msg:"Could not save. Please try again."}:out); })
     .catch(function(){ return {ok:false,msg:"Could not save. Check your connection."}; });
 }
+
 var remote={
-  reserve:function(d,n,name){ return tx(d,function(x){ if(x.slots[n]) return {ok:false,msg:"That slot was just taken."}; x.slots[n]=name; return {ok:true}; }); },
+  reserve:function(d,n,name){ 
+    return tx(d,function(x){ 
+      let targetSlot = n;
+      if (x.slots[targetSlot]) {
+        targetSlot = findNextAvailable(x.slots, n, MAXSLOTS);
+      }
+      if (!targetSlot) {
+        if (x.wait.length >= MAXWAIT) return {ok:false, msg:"All slots and the waiting list are full."};
+        x.wait.push(name);
+        return {ok:true};
+      }
+      x.slots[targetSlot] = name; 
+      return {ok:true}; 
+    }); 
+  },
   join:function(d,name){ return tx(d,function(x){ if(x.wait.length>=MAXWAIT) return {ok:false,msg:"The waiting list is full."}; x.wait.push(name); return {ok:true}; }); },
   rmSlot:function(d,n,name){ return tx(d,function(x){
     if(x.slots[n]!==name) return {ok:false,msg:"That booking just changed. Please check the list."};
     delete x.slots[n];
-    if(x.wait.length) x.slots[n]=x.wait.shift(); // waiting list #1 fills the empty number
+    if(x.wait.length) x.slots[n]=x.wait.shift(); 
     return {ok:true};
   }); },
   rmWait:function(d,i,name){ return tx(d,function(x){ if(x.wait[i]!==name) return {ok:false,msg:"That booking just changed. Please check the list."}; x.wait.splice(i,1); return {ok:true}; }); },
@@ -275,6 +319,7 @@ var remote={
     return {ok:true};
   }); }
 };
+
 var configured=/^https:\/\//.test(DB_URL)&&DB_URL.indexOf("PASTE")<0;
 function init(){
   if(configured&&window.firebase){
