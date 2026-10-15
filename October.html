@@ -156,7 +156,10 @@ input:focus-visible{outline:3px solid var(--ball)}
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
 <script>
 var SLOTS = {15:"6-10 pm",16:"12-3 pm",19:"6-10 pm",20:"6-10 pm",21:"12-3 pm",22:"6-10 pm",23:"12-3 pm",26:"6-10 pm",27:"6-10 pm",28:"12-3 pm",29:"6-10 pm",30:"6-10 pm"};
-var YEAR=2026, MONTH=9, MAXSLOTS=30, MAXWAIT=4;
+var YEAR=2026, MONTH=9;
+// 12-3 pm dates: 24 slots + 6 waiting list. 6-10 pm dates: 30 slots + 4 waiting list.
+function maxSlots(d){ return SLOTS[d] && SLOTS[d].indexOf("12")===0 ? 24 : 30; }
+function maxWait(d){ return SLOTS[d] && SLOTS[d].indexOf("12")===0 ? 6 : 4; }
 // >>> SETUP: paste your Firebase Realtime Database URL below (see README steps) <<<
 var DB_URL = "https://sevpc-281be-default-rtdb.firebaseio.com/"; // e.g. "https://my-club-default-rtdb.firebaseio.com"
 
@@ -195,7 +198,7 @@ h+="<tr>";
 for(var c=0;c<7;c++){
 if(r*7+c<first||d>total){h+='<td class="empty"></td>';continue;}
 var s=SLOTS[d], stt=status(d), n=res[d]&&res[d].slots?Object.keys(res[d].slots).length:0, 
-    info = stt==="soon" ? openLabel(d) : (stt==="closed"?"Closed":(n?n+"/"+MAXSLOTS:""));
+    info = stt==="soon" ? openLabel(d) : (stt==="closed"?"Closed":(n?n+"/"+maxSlots(d):""));
 h+='<td><button class="day'+(s?' has':'')+(stt==="soon"||stt==="closed"?' dim':'')+'" data-d="'+d+'"'+(stt==="none"||stt==="soon"?' disabled':'')+' aria-label="October '+d+(stt==="soon"?', not open yet':'')+'">'+d+
 (s?'<span class="tag '+(s.indexOf("12")===0?"noon":"eve")+'">'+s+'</span>':'')+
 (info?'<span class="cnt">'+info+'</span>':'')+'</button></td>';
@@ -211,21 +214,23 @@ var calView=document.getElementById("calView"), slotView=document.getElementById
 grid=document.getElementById("grid"), dlg=document.getElementById("dlg"), current=null, pick=null;
 
 function promote(){ // local mode: waiting list fills empty numbers in order
-var x=D(current);
-for(var i=1;i<=MAXSLOTS&&x.wait.length;i++){ if(!x.slots[i]) x.slots[i]=x.wait.shift(); }
+var x=D(current), mx=maxSlots(current);
+for(var i=1;i<=mx&&x.wait.length;i++){ if(!x.slots[i]) x.slots[i]=x.wait.shift(); }
 }
 function renderSlots(){
-var x=D(current), m=x.slots, full=Object.keys(m).length>=MAXSLOTS, h="", w="", isOpen=status(current)==="open";
-for(var i=1;i<=MAXSLOTS;i++){
+var x=D(current), m=x.slots, mx=maxSlots(current), mw=maxWait(current),
+    full=Object.keys(m).length>=mx, h="", w="", isOpen=status(current)==="open";
+for(var i=1;i<=mx;i++){
 h+='<button class="slot'+(m[i]?' taken':'')+'" data-n="'+i+'"'+(m[i]&&isOpen?' title="Tap to edit or remove"':'')+(isOpen?'':' disabled')+'>'+i+'.'+(m[i]?' '+esc(m[i]):'')+'</button>';
 }
+grid.style.gridTemplateRows="repeat("+(mx/3)+",auto)";
 grid.innerHTML=h;
-for(var j=0;j<MAXWAIT;j++){
+for(var j=0;j<mw;j++){
 var nm=x.wait[j], off=!nm&&(!full||j!==x.wait.length);
 w+='<button class="slot wslot'+(nm?' taken':'')+'" data-w="'+j+'"'+(off||!isOpen?' disabled':'')+'>'+(j+1)+'.'+(nm?' '+esc(nm):'')+'</button>';
 }
 document.getElementById("wgrid").innerHTML=w;
-document.getElementById("whint").textContent=!isOpen?"Reservations are closed for this date.":(full?"All slots are full. Join the list and you move up when a spot opens.":"Opens when all "+MAXSLOTS+" slots are taken.");
+document.getElementById("whint").textContent=!isOpen?"Reservations are closed for this date.":(full?"All slots are full. Join the list and you move up when a spot opens.":"Opens when all "+mx+" slots are taken.");
 var cl=new Date(startOf(current).getTime()-7200000);
 document.getElementById("when").textContent="October "+current+" \u00b7 "+SLOTS[current]+" \u00b7 "+(isOpen?"Reservations close at "+cl.toLocaleTimeString([],{hour:"numeric",minute:"2-digit",timeZone:"Asia/Manila"}):"Reservations closed");
 document.getElementById("mode").textContent=!ready?"Connecting\u2026":(!fdb?"Setup needed: add your Firebase URL at the top of the script. Until then bookings are saved on this device only.":(connErr?"Can't reach the booking server right now.":""));
@@ -259,13 +264,13 @@ function findNextAvailable(slotsMap, startNum, maxSlots) {
 // ---- Storage: Firebase Realtime Database (shared) or this device (fallback) ----
 var local={
 reserve:async function(d,n,name){ 
-  var x=D(d); 
+  var x=D(d), mx=maxSlots(d);
   let targetSlot = n;
   if (x.slots[targetSlot]) {
-    targetSlot = findNextAvailable(x.slots, n, MAXSLOTS);
+    targetSlot = findNextAvailable(x.slots, n, mx);
   }
   if (!targetSlot) {
-    if (x.wait.length >= MAXWAIT) return {ok:false, msg:"All slots and the waiting list are full."};
+    if (x.wait.length >= maxWait(d)) return {ok:false, msg:"All slots and the waiting list are full."};
     x.wait.push(name);
     persist();
     return {ok:true};
@@ -274,7 +279,7 @@ reserve:async function(d,n,name){
   persist(); 
   return {ok:true}; 
 },
-join:async function(d,name){ var x=D(d); if(x.wait.length>=MAXWAIT) return {ok:false,msg:"The waiting list is full."}; x.wait.push(name); persist(); return {ok:true}; },
+join:async function(d,name){ var x=D(d); if(x.wait.length>=maxWait(d)) return {ok:false,msg:"The waiting list is full."}; x.wait.push(name); persist(); return {ok:true}; },
 rmSlot:async function(d,n){ var x=D(d); delete x.slots[n]; promote(); persist(); return {ok:true}; },
 rmWait:async function(d,i){ D(d).wait.splice(i,1); persist(); return {ok:true}; },
 edit:async function(d,w,i,old,nm){
@@ -301,12 +306,13 @@ return (Object.keys(x.slots).length||x.wait.length)?x:null;
 var remote={
 reserve:function(d,n,name){ 
   return tx(d,function(x){ 
+    var mx=maxSlots(d);
     let targetSlot = n;
     if (x.slots[targetSlot]) {
-      targetSlot = findNextAvailable(x.slots, n, MAXSLOTS);
+      targetSlot = findNextAvailable(x.slots, n, mx);
     }
     if (!targetSlot) {
-      if (x.wait.length >= MAXWAIT) return {ok:false, msg:"All slots and the waiting list are full."};
+      if (x.wait.length >= maxWait(d)) return {ok:false, msg:"All slots and the waiting list are full."};
       x.wait.push(name);
       return {ok:true};
     }
@@ -314,7 +320,7 @@ reserve:function(d,n,name){
     return {ok:true}; 
   }); 
 },
-join:function(d,name){ return tx(d,function(x){ if(x.wait.length>=MAXWAIT) return {ok:false,msg:"The waiting list is full."}; x.wait.push(name); return {ok:true}; }); },
+join:function(d,name){ return tx(d,function(x){ if(x.wait.length>=maxWait(d)) return {ok:false,msg:"The waiting list is full."}; x.wait.push(name); return {ok:true}; }); },
 rmSlot:function(d,n,name){ return tx(d,function(x){
 if(x.slots[n]!==name) return {ok:false,msg:"That booking just changed. Please check the list."};
 delete x.slots[n];
