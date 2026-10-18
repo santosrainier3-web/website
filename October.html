@@ -181,8 +181,10 @@ function openLabel(d){
   if(isNoon(d)) return "Opens Oct "+(d-1)+", 8pm";
   return "Opens Oct "+d+", 10am";
 }
+var OPEN_ALL = false; // true = every schedule is open; set to false to bring back the booking windows
 function status(d){
   var st=startOf(d); if(!st) return "none";
+  if(OPEN_ALL) return "open";
   var now=new Date(), closes=new Date(st.getTime()-2*3600000);
   if(now<opensAt(d)) return "soon";
   if(now>=closes) return "closed";
@@ -221,7 +223,7 @@ function renderSlots(){
 var x=D(current), m=x.slots, mx=maxSlots(current), mw=maxWait(current),
     full=Object.keys(m).length>=mx, h="", w="", isOpen=status(current)==="open";
 for(var i=1;i<=mx;i++){
-h+='<button class="slot'+(m[i]?' taken':'')+'" data-n="'+i+'"'+(m[i]&&isOpen?' title="Tap to edit or remove"':'')+(isOpen?'':' disabled')+'>'+i+'.'+(m[i]?' '+esc(m[i]):'')+'</button>';
+h+='<button class="slot'+(m[i]?' taken':'')+'" data-n="'+i+'"'+(m[i]&&isOpen&&!isRes(current,i)?' title="Tap to edit or remove"':'')+((isOpen&&!isRes(current,i))?'':' disabled')+'>'+i+'.'+(m[i]?' '+esc(m[i]):'')+'</button>';
 }
 grid.style.gridTemplateRows="repeat("+(mx/3)+",auto)";
 grid.innerHTML=h;
@@ -232,7 +234,7 @@ w+='<button class="slot wslot'+(nm?' taken':'')+'" data-w="'+j+'"'+(off||!isOpen
 document.getElementById("wgrid").innerHTML=w;
 document.getElementById("whint").textContent=!isOpen?"Reservations are closed for this date.":(full?"All slots are full. Join the list and you move up when a spot opens.":"Opens when all "+mx+" slots are taken.");
 var cl=new Date(startOf(current).getTime()-7200000);
-document.getElementById("when").textContent="October "+current+" \u00b7 "+SLOTS[current]+" \u00b7 "+(isOpen?"Reservations close at "+cl.toLocaleTimeString([],{hour:"numeric",minute:"2-digit",timeZone:"Asia/Manila"}):"Reservations closed");
+document.getElementById("when").textContent="October "+current+" \u00b7 "+SLOTS[current]+" \u00b7 "+(isOpen?(OPEN_ALL?"Reservations open":"Reservations close at "+cl.toLocaleTimeString([],{hour:"numeric",minute:"2-digit",timeZone:"Asia/Manila"})):"Reservations closed");
 document.getElementById("mode").textContent=!ready?"Connecting\u2026":(!fdb?"Setup needed: add your Firebase URL at the top of the script. Until then bookings are saved on this device only.":(connErr?"Can't reach the booking server right now.":""));
 }
 function refresh(){ if(slotView.style.display==="block"){ if(!dlg.open) renderSlots(); } else buildCal(); }
@@ -335,6 +337,37 @@ return {ok:true};
 }); }
 };
 var configured=/^https:\/\//.test(DB_URL)&&DB_URL.indexOf("PASTE")<0;
+
+// ---- Pre-reserved slots (always kept; change names here) ----
+var RESERVED={1:"Rainier",2:"Michael",3:"Ate She"}, RESERVED_DATES=[19,20,21,22,23], seeding={};
+function isRes(d,n){ return RESERVED_DATES.indexOf(+d)>=0 && !!RESERVED[n]; }
+function applyReserved(x,d){
+  var mx=maxSlots(d), changed=false;
+  Object.keys(RESERVED).forEach(function(n){
+    var nm=RESERVED[n], old=x.slots[n];
+    if(old===nm) return;
+    x.slots[n]=nm; changed=true;
+    if(old){
+      var t=findNextAvailable(x.slots,4,mx);
+      if(t) x.slots[t]=old; else x.wait.unshift(old);
+    }
+  });
+  return changed;
+}
+function seedAll(){
+  RESERVED_DATES.forEach(function(d){
+    var s=(res[d]&&res[d].slots)||{}, ok=true;
+    Object.keys(RESERVED).forEach(function(n){ if(s[n]!==RESERVED[n]) ok=false; });
+    if(ok||seeding[d]) return;
+    seeding[d]=true;
+    tx(d,function(x){ return {ok:applyReserved(x,d)}; }).then(function(){ seeding[d]=false; });
+  });
+}
+function seedLocal(){
+  RESERVED_DATES.forEach(function(d){ applyReserved(D(d),d); });
+  persist();
+}
+
 function init(){
 if(configured&&window.firebase){
 try{
@@ -342,11 +375,11 @@ firebase.initializeApp({databaseURL:DB_URL}); fdb=firebase.database(); ops=remot
 fdb.ref("pb").on("value",function(s){
 connErr=false; var v=s.val()||{}; res={};
 Object.keys(v).forEach(function(k){ var d=+k.slice(1), x=v[k]||{}; res[d]={slots:normSlots(x.slots),wait:toArr(x.wait),wid:[]}; });
-ready=true; refresh();
+ready=true; refresh(); seedAll();
 },function(){ connErr=true; ready=true; refresh(); });
 }catch(e){ fdb=null; }
 }
-if(!fdb){ ops=local; try{ res=JSON.parse(localStorage.getItem("pb-slots2")||"{}"); }catch(e){} ready=true; refresh(); }
+if(!fdb){ ops=local; try{ res=JSON.parse(localStorage.getItem("pb-slots2")||"{}"); }catch(e){} seedLocal(); ready=true; refresh(); }
 }
 
 // ---- Dialog ----
