@@ -336,6 +336,36 @@ if(w) x.wait[i]=nm; else x.slots[i]=nm;
 return {ok:true};
 }); }
 };
+var configured=/^https:\/\//.test(DB_URL)&&DB_URL.indexOf("PASTE")<0;
+
+// ---- Pre-reserved slots (always kept; change names here) ----
+var RESERVED={}, RESERVED_DATES=[], seeding={}; // empty = no pre-reserved slots
+
+// ---- Limit: each device can hold at most MAX_PER_DEVICE reservations per date ----
+var MAX_PER_DEVICE=2, mine={};
+try{ mine=JSON.parse(localStorage.getItem("pb-mine")||"{}"); }catch(e){}
+function saveMine(){ try{ localStorage.setItem("pb-mine",JSON.stringify(mine)); }catch(e){} }
+function myCount(d){ // my recorded bookings that still exist on the list (slots + waiting list)
+  var x=D(d), present=Object.keys(x.slots).map(function(k){return x.slots[k];}).concat(x.wait), n=0;
+  (mine[d]||[]).forEach(function(nm){ var i=present.indexOf(nm); if(i>=0){ present.splice(i,1); n++; } });
+  return n;
+}
+function addMine(d,nm){ (mine[d]=mine[d]||[]).push(nm); saveMine(); }
+function dropMine(d,nm){ var a=mine[d]||[], i=a.indexOf(nm); if(i>=0){ a.splice(i,1); saveMine(); } }
+var LIMIT_MSG="Limit reached: only "+MAX_PER_DEVICE+" slots per device for each date.";
+function isRes(d,n){ return RESERVED_DATES.indexOf(+d)>=0 && !!RESERVED[n]; }
+function applyReserved(x,d){
+  var mx=maxSlots(d), changed=false;
+  Object.keys(RESERVED).forEach(function(n){
+    var nm=RESERVED[n], old=x.slots[n];
+    if(old===nm) return;
+    x.slots[n]=nm; changed=true;
+    if(old){
+      var t=findNextAvailable(x.slots,4,mx);
+      if(t) x.slots[t]=old; else x.wait.unshift(old);
+    }
+  });
+  return changed;
 }
 function seedAll(){
   RESERVED_DATES.forEach(function(d){
@@ -380,6 +410,7 @@ if(nm){
 document.getElementById("rmtext").textContent="Edit or remove "+nm+" ("+(isW?"waiting list "+(pick.i+1):"slot "+pick.i)+")?";
 openDlg("rm");
 }else{
+if(myCount(current)>=MAX_PER_DEVICE){say(LIMIT_MSG);return;}
 document.getElementById("dtitle").textContent=isW?"Join waiting list":"Reserve slot "+pick.i;
 document.getElementById("save").textContent=isW?"Join":"Reserve";
 document.getElementById("name").value="";
@@ -402,6 +433,7 @@ document.getElementById("rmyes").onclick=async function(){
 var d=current;
 if(status(d)!=="open"){dlg.close();renderSlots();return;}
 var r=pick.w?await ops.rmWait(d,pick.i,pick.name):await ops.rmSlot(d,pick.i,pick.name);
+if(r.ok) dropMine(d,pick.name);
 dlg.close(); if(!r.ok) say(r.msg); renderSlots();
 };
 formEl.addEventListener("submit",async function(){
@@ -409,8 +441,10 @@ var name=document.getElementById("name").value.trim().slice(0,30), d=current;
 if(status(d)!=="open"){dlg.close();renderSlots();return;}
 if(!name){document.getElementById("name").focus();return;}
 if(pick.edit&&name===pick.name){dlg.close();return;}
+if(!pick.edit&&myCount(d)>=MAX_PER_DEVICE){dlg.close();say(LIMIT_MSG);renderSlots();return;}
 var r=pick.edit?await ops.edit(d,pick.w,pick.i,pick.name,name)
 :(pick.w?await ops.join(d,name):await ops.reserve(d,pick.i,name));
+if(r.ok){ if(pick.edit){ var a=mine[d]||[], k=a.indexOf(pick.name); if(k>=0){ a[k]=name; saveMine(); } } else addMine(d,name); }
 dlg.close(); if(!r.ok) say(r.msg); renderSlots();
 });
 setInterval(refresh,30000);
