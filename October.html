@@ -336,23 +336,6 @@ if(w) x.wait[i]=nm; else x.slots[i]=nm;
 return {ok:true};
 }); }
 };
-var configured=/^https:\/\//.test(DB_URL)&&DB_URL.indexOf("PASTE")<0;
-
-// ---- Pre-reserved slots (always kept; change names here) ----
-var RESERVED={1:"Rainier",2:"Michael",3:"Ate She"}, RESERVED_DATES=[19,20,21,22,23], seeding={};
-function isRes(d,n){ return RESERVED_DATES.indexOf(+d)>=0 && !!RESERVED[n]; }
-function applyReserved(x,d){
-  var mx=maxSlots(d), changed=false;
-  Object.keys(RESERVED).forEach(function(n){
-    var nm=RESERVED[n], old=x.slots[n];
-    if(old===nm) return;
-    x.slots[n]=nm; changed=true;
-    if(old){
-      var t=findNextAvailable(x.slots,4,mx);
-      if(t) x.slots[t]=old; else x.wait.unshift(old);
-    }
-  });
-  return changed;
 }
 function seedAll(){
   RESERVED_DATES.forEach(function(d){
