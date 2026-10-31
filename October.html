@@ -109,10 +109,10 @@ input:focus-visible{outline:3px solid var(--ball)}
 <svg class="ball" viewBox="0 0 100 100"><use href="#ball"/></svg>
 </div>
 <div class="head">
-<h1>october</h1>
+<h1>november</h1>
 <div class="club">Sta. Elena Village<br>Pickleball<br>Club</div>
 </div>
-<div class="cal-wrap"><table id="cal" aria-label="October reservation calendar"></table></div>
+<div class="cal-wrap"><table id="cal" aria-label="November reservation calendar"></table></div>
 <p class="note"><svg viewBox="0 0 100 100" aria-hidden="true"><use href="#ball"/></svg><span>SLOTS ARE LIMITED<br>CONTACT US TO SECURE YOUR SLOT<br>AND ENJOY THE PLAY WITHOUT A WORRY.</span></p>
 </div>
 </div>
@@ -155,8 +155,8 @@ input:focus-visible{outline:3px solid var(--ball)}
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
 <script>
-var SLOTS = {15:"6-10 pm",16:"12-3 pm",19:"6-10 pm",20:"6-10 pm",21:"12-3 pm",22:"6-10 pm",23:"12-3 pm",26:"6-10 pm",27:"6-10 pm",28:"12-3 pm",29:"6-10 pm",30:"6-10 pm"};
-var YEAR=2026, MONTH=9;
+var SLOTS = {2:"6-10 pm",3:"6-10 pm",4:"12-3 pm",5:"6-10 pm",6:"12-3 pm",9:"6-10 pm",10:"6-10 pm",11:"12-3 pm",12:"6-10 pm",13:"12-3 pm"};
+var YEAR=2026, MONTH=10;
 // 12-3 pm dates: 24 slots + 6 waiting list. 6-10 pm dates: 30 slots + 4 waiting list.
 function maxSlots(d){ return SLOTS[d] && SLOTS[d].indexOf("12")===0 ? 24 : 30; }
 function maxWait(d){ return SLOTS[d] && SLOTS[d].indexOf("12")===0 ? 6 : 4; }
@@ -178,8 +178,8 @@ function opensAt(d){
   return pht(YEAR,MONTH,d,10,0);                 // 6-10 pm dates open 10:00 AM the same day
 }
 function openLabel(d){
-  if(isNoon(d)) return "Opens Oct "+(d-1)+", 8pm";
-  return "Opens Oct "+d+", 10am";
+  if(isNoon(d)) return "Opens Nov "+(d-1)+", 8pm";
+  return "Opens Nov "+d+", 10am";
 }
 var OPEN_ALL = false; // true = every schedule is open; set to false to bring back the booking windows
 function status(d){
@@ -195,13 +195,14 @@ var cal=document.getElementById("cal");
 var first=(new Date(YEAR,MONTH,1).getDay()+6)%7, total=new Date(YEAR,MONTH+1,0).getDate();
 function buildCal(){
 var h="<thead><tr>"+["Mo","Tu","We","Th","Fr","Sa","Su"].map(function(d){return "<th>"+d+"</th>"}).join("")+"</tr></thead><tbody>", d=1;
-for(var r=0;r<5;r++){
+for(var r=0;r<6;r++){
+if(d>total) break;
 h+="<tr>";
 for(var c=0;c<7;c++){
 if(r*7+c<first||d>total){h+='<td class="empty"></td>';continue;}
 var s=SLOTS[d], stt=status(d), n=res[d]&&res[d].slots?Object.keys(res[d].slots).length:0, 
     info = stt==="soon" ? openLabel(d) : (stt==="closed"?"Closed":(n?n+"/"+maxSlots(d):""));
-h+='<td><button class="day'+(s?' has':'')+(stt==="soon"||stt==="closed"?' dim':'')+'" data-d="'+d+'"'+(stt==="none"||stt==="soon"?' disabled':'')+' aria-label="October '+d+(stt==="soon"?', not open yet':'')+'">'+d+
+h+='<td><button class="day'+(s?' has':'')+(stt==="soon"||stt==="closed"?' dim':'')+'" data-d="'+d+'"'+(stt==="none"||stt==="soon"?' disabled':'')+' aria-label="November '+d+(stt==="soon"?', not open yet':'')+'">'+d+
 (s?'<span class="tag '+(s.indexOf("12")===0?"noon":"eve")+'">'+s+'</span>':'')+
 (info?'<span class="cnt">'+info+'</span>':'')+'</button></td>';
 d++;
@@ -234,7 +235,7 @@ w+='<button class="slot wslot'+(nm?' taken':'')+'" data-w="'+j+'"'+(off||!isOpen
 document.getElementById("wgrid").innerHTML=w;
 document.getElementById("whint").textContent=!isOpen?"Reservations are closed for this date.":(full?"All slots are full. Join the list and you move up when a spot opens.":"Opens when all "+mx+" slots are taken.");
 var cl=new Date(startOf(current).getTime()-7200000);
-document.getElementById("when").textContent="October "+current+" \u00b7 "+SLOTS[current]+" \u00b7 "+(isOpen?(OPEN_ALL?"Reservations open":"Reservations close at "+cl.toLocaleTimeString([],{hour:"numeric",minute:"2-digit",timeZone:"Asia/Manila"})):"Reservations closed");
+document.getElementById("when").textContent="November "+current+" \u00b7 "+SLOTS[current]+" \u00b7 "+(isOpen?(OPEN_ALL?"Reservations open":"Reservations close at "+cl.toLocaleTimeString([],{hour:"numeric",minute:"2-digit",timeZone:"Asia/Manila"})):"Reservations closed");
 document.getElementById("mode").textContent=!ready?"Connecting\u2026":(!fdb?"Setup needed: add your Firebase URL at the top of the script. Until then bookings are saved on this device only.":(connErr?"Can't reach the booking server right now.":""));
 }
 function refresh(){ if(slotView.style.display==="block"){ if(!dlg.open) renderSlots(); } else buildCal(); }
