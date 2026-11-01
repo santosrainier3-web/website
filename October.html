@@ -181,7 +181,7 @@ function openLabel(d){
   if(isNoon(d)) return "Opens Nov "+(d-1)+", 8pm";
   return "Opens Nov "+d+", 10am";
 }
-var OPEN_ALL = true; // true = every schedule is open; set to false to bring back the booking windows
+var OPEN_ALL = false; // true = every schedule is open; set to false to bring back the booking windows
 function status(d){
   var st=startOf(d); if(!st) return "none";
   if(OPEN_ALL) return "open";
