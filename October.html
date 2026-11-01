@@ -21,7 +21,15 @@ body{margin:0;min-height:100vh;color:var(--txt);font-family:"Trebuchet MS","Helv
 .head{display:flex;justify-content:space-between;align-items:flex-end;gap:12px}
 h1{margin:0;font-size:clamp(44px,12vw,72px);letter-spacing:-.04em;line-height:.9;font-weight:900}
 .club{text-align:right;font-weight:800;font-size:clamp(12px,3vw,15px);line-height:1.2;color:var(--mute)}
-.hero{position:absolute;right:14px;top:-30px;width:118px;height:118px;pointer-events:none}
+.hero {
+  position: absolute;
+  right: 14px;
+  top: -30px;
+  /* Scales with screen width: minimum 70px, preferred 15vw, maximum 130px */
+  width: clamp(70px, 15vw, 130px);
+  height: clamp(70px, 15vw, 130px);
+  pointer-events: none;
+}
 .hero img{display:block;width:100%;height:100%;object-fit:contain;filter:drop-shadow(0 6px 14px rgba(0,0,0,.45))}
 .cal-wrap{overflow-x:auto;margin-top:24px}
 table{border-collapse:separate;border-spacing:6px;width:100%;table-layout:fixed;min-width:400px}
@@ -60,7 +68,34 @@ td.empty{}
 .wl .hint{font-size:12px;font-style:normal;font-family:"Trebuchet MS",Arial,sans-serif;color:var(--mute);margin:4px 0 10px}
 .wgrid{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}
 .wslot{font-size:clamp(13px,3vw,20px)}.wslot.taken{color:var(--pink)}
-@media (max-width:520px){.wgrid{grid-template-columns:repeat(2,1fr)}}
+@media (max-width: 480px) {
+  .hero {
+    top: -20px;
+    right: 10px;
+    width: 75px;
+    height: 75px;
+  }
+}
+
+/* Medium screens / Tablets */
+@media (min-width: 481px) and (max-width: 768px) {
+  .hero {
+    top: -25px;
+    right: 12px;
+    width: 100px;
+    height: 100px;
+  }
+}
+
+/* Large screens / Desktop */
+@media (min-width: 769px) {
+  .hero {
+    top: -35px;
+    right: 16px;
+    width: 130px;
+    height: 130px;
+  }
+}
 .rmtext{margin:0 0 4px;font-size:16px;font-weight:700;line-height:1.4}
 .back{all:unset;box-sizing:border-box;cursor:pointer;border:2px solid var(--violet);border-radius:999px;padding:10px 26px;font-weight:800;font-size:16px;font-style:normal;font-family:"Trebuchet MS",Arial,sans-serif;background:rgba(138,108,255,.12)}
 .back:hover{background:rgba(138,108,255,.3)}
