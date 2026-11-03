@@ -131,6 +131,8 @@ input:focus-visible{outline:3px solid var(--ball)}
 <input type="text" id="aname" autocomplete="name" placeholder="e.g. Maria Santos" maxlength="30">
 <label for="aphone">Contact number</label>
 <input type="tel" id="aphone" autocomplete="tel" placeholder="09XX XXX XXXX">
+<label for="aaddr">Full home address</label>
+<input type="text" id="aaddr" autocomplete="street-address" placeholder="House/Unit no., Street, Barangay, City, Province" maxlength="200">
 </div>
 <label for="aemail">Gmail address</label>
 <input type="email" id="aemail" autocomplete="email" placeholder="rainiersantos@gmail.com">
@@ -205,7 +207,6 @@ function maxSlots(d){ return SLOTS[d] && SLOTS[d].indexOf("12")===0 ? 24 : 30; }
 function maxWait(d){ return SLOTS[d] && SLOTS[d].indexOf("12")===0 ? 6 : 4; }
 
 var DB_URL = "https://sevpc-281be-default-rtdb.firebaseio.com/";
-// >>> Paste your apiKey from Firebase Console > Project settings > Your apps <<<
 var FB_CONFIG = {apiKey:"AIzaSyBavjKjAXhSBdCwiH6DDWfSs5CU_vi6uMY", authDomain:"sevpc-281be.firebaseapp.com", databaseURL:DB_URL, projectId:"sevpc-281be"};
 
 var res={}, ready=false, canWrite=true, ops=null;
@@ -424,7 +425,7 @@ function seedAll(){
   });
 }
 
-// ---- Accounts: sign up / sign in (Gmail + PH contact number required) ----
+// ---- Accounts: sign up / sign in (Gmail, PH contact number and home address required) ----
 var auth=null, profile=null, pendingProfile=null, listening=false, amode="in";
 var GMAIL=/^[a-z0-9._%+\-]+@gmail\.com$/i, PHONE=/^(09\d{9}|\+639\d{9})$/;
 function amsg(t){ document.getElementById("amsg").textContent=t||""; }
@@ -457,10 +458,12 @@ if(!GMAIL.test(email)){ amsg("Please use a valid @gmail.com address."); return; 
 if(pass.length<6){ amsg("Password must be at least 6 characters."); return; }
 if(amode==="up"){
 var name=document.getElementById("aname").value.trim().slice(0,30),
-    phone=document.getElementById("aphone").value.replace(/[\s\-()]/g,"");
+    phone=document.getElementById("aphone").value.replace(/[\s\-()]/g,""),
+    address=document.getElementById("aaddr").value.trim().replace(/\s+/g," ");
 if(!name){ amsg("Please enter your full name."); return; }
 if(!PHONE.test(phone)){ amsg("Enter a valid PH mobile number (09XXXXXXXXX or +639XXXXXXXXX)."); return; }
-pendingProfile={name:name,email:email,phone:phone};
+if(address.length<15||address.split(/[\s,]+/).length<4){ amsg("Please type your complete home address."); return; }
+pendingProfile={name:name,email:email,phone:phone,address:address.slice(0,200)};
 }
 btn.disabled=true; amsg("");
 try{
@@ -485,7 +488,7 @@ ready=true; refresh(); seedAll();
 }
 function loadProfile(u){
 if(pendingProfile){ profile=pendingProfile; pendingProfile=null; return Promise.resolve(); }
-return fdb.ref("users/"+u.uid).once("value").then(function(s){ profile=s.val()||{email:u.email,name:"",phone:""}; })
+return fdb.ref("users/"+u.uid).once("value").then(function(s){ profile=s.val()||{email:u.email,name:"",phone:"",address:""}; })
 .catch(function(){ profile={email:u.email,name:"",phone:""}; });
 }
 function init(){
