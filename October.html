@@ -227,7 +227,7 @@ function openLabel(d){
   if(isNoon(d)) return "Opens Nov "+(d-1)+", 8pm";
   return "Opens Nov "+d+", 10am";
 }
-var OPEN_ALL = false; // true = every schedule is open; false = booking windows apply
+var OPEN_ALL = true; // true = every schedule is open; false = booking windows apply
 function status(d){
   var st=startOf(d); if(!st) return "none";
   if(OPEN_ALL) return "open";
